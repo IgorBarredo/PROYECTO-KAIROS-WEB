@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Verify Email - Proyecto Kairos</title>
+  <link rel="stylesheet" href="css/auth.css">
+</head>
+<body>
+  <div class="auth-container">
+    <div class="auth-box verify-box">
+      <div class="icon-check">✓</div>
+      <h1>Check Your Email</h1>
+      <p class="subtitle">We've sent a verification link to your email address.</p>
+      
+      <div class="info-message">
+        <p>Please check your inbox and click on the verification link to activate your account.</p>
+        <p>If you don't see the email, check your spam folder.</p>
+      </div>
+      
+      <button onclick="resendEmail()" class="auth-btn secondary">Resend Email</button>
+      
+      <a href="login_en.html" class="back-home">← Back to Login</a>
+    </div>
+  </div>
+
+  <script>
+    function resendEmail() {
+      alert('Verification email sent again! Please check your inbox.');
+    }
+  </script>
+</body>
+</html>

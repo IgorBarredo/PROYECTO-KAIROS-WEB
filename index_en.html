@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+
+  <meta charset="UTF-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Proyecto Kairos</title>
+  
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/headerfooter.css">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet">
+  
+  <!-- Importamos Chart.js (TODO LO RELACIONADO A SCRIPTS EN TODOS LOS ARCHIVOS Y GRÁFICAS ESTÁ HECHO CON LA AYUDA DE LA IA)--> 
+  
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+</head>
+<body>
+
+  <!-- Encabezado -->
+  <header>
+
+    <div class="logo">P.K. Proyecto Kairos</div>
+
+    <nav>
+
+      <!--<a href="#method">Methodology</a>-->
+
+      <a href="#graph" class="linked">Results</a>
+
+      <a href="#productos" class="linked">Products</a>
+
+      <a href="newsletter_en.html" class="linked" target="_blank">Newsletter</a>
+
+      <a href="#contacto" class="linked">Contact</a>
+
+      <a href="login_en.html" class="auth-btn login-btn">Login</a>
+
+      <a href="register_en.html"  class="auth-btn register-btn">Register</a>
+
+      <!-- 
+      <div class="dropdown">
+
+        <a href="#contacto" class="dropbtn">Contact</a>
+
+        <div class="dropdown-content">
+
+          <a href="#contacto">Contact Kairos Team</a>
+
+          <a href="https://github.com/tuusuario" target="_blank">Igor's Github - Developer Portfolio</a>
+
+          <a href="curriculum.pdf" target="_blank">C.V. Igor Barredo Arroyo</a>
+
+          <a href="blog_en.html" target="_self">Open Discussion & Learning</a>
+
+        </div>
+
+      </div>
+      -->
+    </nav>
+
+  </header>
+
+  <!-- Hero -->
+  <section id="inicio" class="hero">
+
+    <h1>DO YOU WANT TO GROW YOUR CAPITAL?</h1>
+
+    <h3>FOLLOW THE INSTRUCTIONS AND CONNECT TO OUR PRODUCTS</h3>
+
+    <!--<a href="dashboard_en.html" class="btn">HOW TO START</a>-->
+
+    <a href="login_en.html" class="btn">START NOW</a>
+
+  </section>
+
+  <!-- Sección Gráfica -->
+  <section id="graph" class="grafica">
+
+    <h2>SELECT DIFFERENT PRODUCTS AND COMPARE THEM WITH EACH OTHER AND WITH THE MARKETS</h2>
+
+    <!-- Pestañas de productos -->
+    <div class="tabs-container">
+    
+      <button class="tab-btn active" data-product="mpt">M.P.T MarketProThief</button>
+    
+      <button class="tab-btn active" data-product="golden">GoldenRoad</button>
+    
+      <button class="tab-btn active" data-product="multi">MultiMarkets</button>
+    
+    </div>
+    
+    <canvas id="capitalChart"></canvas>
+  
+  </section>
+
+  <!-- Sección Productos -->
+  <section id="productos" class="productos">
+
+    <h2>FINANCIAL PRODUCTS</h2>
+
+    <div class="productos-container">
+
+      <div class="producto-card">
+        
+        <h3>M.P.T MarketProThief</h3>
+
+        <div class="cont">
+
+          <p>XAAUSD</p>
+          <p>NasdaQ</p>
+          <p>SP500</p>
+
+        </div>
+        
+        <a href="#graph">Check Graph Details</a>
+      
+      </div>
+      
+      <div class="producto-card">
+      
+        <h3>GoldenRoad</h3>
+        
+        <div class="cont">
+
+          <p>XAAUSD</p> 
+
+        </div>
+        
+        <a href="#graph">Check Graph Details</a>
+
+      </div>
+      
+      <div class="producto-card">
+      
+        <h3>MultiMarkets</h3>
+      
+        <div class="cont">
+
+          <p>NasdaQ</p>
+          <p>SP500</p>
+
+        </div>
+
+        <a href="#graph">Check Graph Details</a>
+      
+      </div>
+    
+    </div>
+  
+  </section>
+
+  <!-- Contacto -->
+  <section id="contacto" class="contacto">
+
+    <h2>CONTACT OUR TEAM</h2>
+
+    <form>
+
+      <input type="text" name="nombre" placeholder="Name" required>
+
+      <input type="email" name="email" placeholder="Email" required>
+
+      <textarea name="mensaje" placeholder="Write your message here ..." required></textarea>
+
+      <button type="submit">Send</button>
+
+    </form>
+
+    <div class="redes">
+
+      <a href="https://instagram.com" target="_blank">
+
+        <img src="css/img/ig.jpg" alt="Instagram">
+
+      </a>
+
+      <a href="https://youtube.com" target="_blank">
+
+        <img src="css/img/youtube.png" alt="YouTube">
+
+      </a>
+
+      <a href="https://linkedin.com" target="_blank">
+
+        <img src="css/img/linkedin.png" alt="LinkedIn">
+
+      </a>
+
+    </div>
+
+  </section>
+
+  <!-- Footer -->
+  <footer>
+
+    <p>© 2025 P.K. Proyecto Kairos. All rights reserved.</p>
+
+  </footer>
+
+  <!-- Script para la gráfica -->
+  <script>
+
+    // Redireccionar página según el idioma del usuario
+    //const userLang = navigator.language || navigator.userLanguage; 
+
+    //if (userLang.startsWith("es")) {
+      //window.location.href = "index_es.html"; // Español
+    //} else {
+      //window.location.href = "index_en.html"; // Inglés
+    //}
+
+    const ctx = document.getElementById('capitalChart');
+    
+    // Datos de cada producto
+    const productData = {
+      mpt: {
+        label: 'M.P.T MarketProThief (€)',
+        data: [1000, 2300, 3800, 5200, 6800, 8500],
+        borderColor: '#00b4d8',
+        backgroundColor: 'rgba(0,180,216,0.2)'
+      },
+      golden: {
+        label: 'GoldenRoad (€)',
+        data: [800, 1600, 2800, 4100, 5600, 7200],
+        borderColor: '#FFD700',
+        backgroundColor: 'rgba(255,215,0,0.2)'
+      },
+      multi: {
+        label: 'MultiMarkets (€)',
+        data: [1200, 2100, 3200, 4500, 6000, 7800],
+        borderColor: '#00ff88',
+        backgroundColor: 'rgba(0,255,136,0.2)'
+      }
+    };
+
+    let capitalChart;
+    let activeProducts = ['mpt', 'golden', 'multi'];
+
+    function updateChart() {
+      const datasets = activeProducts.map(product => ({
+        label: productData[product].label,
+        data: productData[product].data,
+        borderColor: productData[product].borderColor,
+        backgroundColor: productData[product].backgroundColor,
+        fill: true,
+        tension: 0.3,
+        pointBackgroundColor: productData[product].borderColor,
+        pointBorderColor: '#fff',
+        pointRadius: 5
+      }));
+
+      if (capitalChart) {
+        capitalChart.data.datasets = datasets;
+        capitalChart.update();
+      } else {
+        capitalChart = new Chart(ctx.getContext('2d'), {
+          type: 'line',
+          data: {
+            labels: ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio'],
+            datasets: datasets
+          },
+          options: {
+            responsive: true,
+            plugins: {
+              legend: {
+                labels: {
+                  color: '#fff'
+                }
+              }
+            },
+            scales: {
+              x: {
+                ticks: { color: '#fff' },
+                grid: { color: 'rgba(255,255,255,0.1)' }
+              },
+              y: {
+                ticks: { color: '#fff' },
+                grid: { color: 'rgba(255,255,255,0.1)' }
+              }
+            }
+          }
+        });
+      }
+    }
+
+    // Event listeners para las pestañas
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', function() {
+        const product = this.getAttribute('data-product');
+        
+        if (this.classList.contains('active')) {
+          // Desactivar
+          this.classList.remove('active');
+          activeProducts = activeProducts.filter(p => p !== product);
+        } else {
+          // Activar
+          this.classList.add('active');
+          activeProducts.push(product);
+        }
+        
+        // Solo actualizar si hay al menos un producto activo
+        if (activeProducts.length > 0) {
+          updateChart();
+        }
+      });
+    });
+
+    // Inicializar la gráfica
+    if (ctx) {
+      updateChart();
+    }
+
+    // Botones de autenticación (placeholder)
+    document.querySelector('.login-btn').addEventListener('click', function() {
+      alert('Login functionality will be implemented with backend integration.');
+    });
+
+    document.querySelector('.register-btn').addEventListener('click', function() {
+      alert('Register functionality will be implemented with backend integration.');
+    });
+
+</script>
+
+</body>
+</html>

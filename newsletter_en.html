@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Newsletter - Proyecto Kairos</title>
+  <link rel="stylesheet" href="css/newsletter.css">
+  <link rel="stylesheet" href="css/headerfooter.css">
+
+</head>
+<body>
+  <div class="container">
+
+    <!-- Contenido principal -->
+    <main class="main-content">
+
+      <!-- Caja de newsletter -->
+      <div class="newsletter-box">
+        <!-- Sección superior con imagen circular y título -->
+        <div class="header-section">
+          <img src="css/img/IgorBarredo.jpg" alt="Igor Barredo Arroyo" class="profile-image">
+          <h1 class="main-title">Igor Barredo Arroyo</h1>
+        </div>
+        <p class="description">The art of capitalizing resources, growing, and selling.</p>
+        <p class="description">Every day I send an email where I explain how to do it. You can sign up here:</p>
+        <form id="newsletterForm" class="newsletter-form">
+          <input 
+            type="email" 
+            id="email" 
+            placeholder="Write your email ..." 
+            required
+            autocomplete="email"
+          >
+          <button type="submit">Subscribe</button>
+        </form>
+
+      </div>
+
+    </main>
+
+  </div>
+
+  <!-- Footer -->
+  <footer>
+
+    <p>© 2025 P.K. Proyecto Kairos. All rights reserved.</p>
+
+  </footer>
+
+  <script>
+    // Manejar envío del formulario
+    document.getElementById('newsletterForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      
+      const email = document.getElementById('email').value;
+      
+      // Mostrar mensaje de éxito
+      document.getElementById('successMessage').style.display = 'flex';
+      
+      // Limpiar formulario
+      document.getElementById('email').value = '';
+      
+      // Aquí iría la integración con el backend para guardar el email
+      console.log('Email subscribed:', email);
+    });
+
+    // Cerrar mensaje de éxito
+    function closeSuccessMessage() {
+      document.getElementById('successMessage').style.display = 'none';
+    }
+  </script>
+
+</body>
+</html>
