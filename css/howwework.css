@@ -1,0 +1,597 @@
+/* Base Styles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Space Grotesk', sans-serif;
+  color: whitesmoke;
+  background: url("img/fondo.jpg") no-repeat center center fixed;
+  background-size: cover;
+  background-attachment: fixed;
+  line-height: 1.6;
+}
+
+/* Header */
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 11px 40px;
+}
+
+header .logo {
+  font-size: 22px;
+  font-weight: bold;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+header nav {
+  display: flex;
+  gap: 15px;
+  align-items: center;
+}
+
+header nav a {
+  text-decoration: none;
+  color: whitesmoke;
+  border-radius: 6px;
+  transition: color 0.2s;
+  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.4);
+}
+
+header nav .linked {
+  margin: 0 15px;
+}
+
+header nav > a:hover {
+  color: #00ddff;
+}
+
+.auth-btn {
+  padding: 8px 20px;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.4);
+}
+
+.login-btn {
+  background: rgba(255, 255, 255, 0.1);
+  color: whitesmoke;
+}
+
+.register-btn {
+  background: rgba(255, 255, 255, 0.2);
+  color: whitesmoke;
+}
+
+.login-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.register-btn:hover {
+  background: #00ddff;
+  color: whitesmoke;
+}
+
+/* Hero Section */
+.work-hero {
+  text-align: center;
+  padding: 80px 20px 60px;
+  margin: 40px auto;
+  max-width: 1000px;
+}
+
+.work-hero h1 {
+  font-size: 56px;
+  margin-bottom: 15px;
+  color: whitesmoke;
+  text-shadow: 3px 3px 8px rgba(0, 0, 0, 0.7), 0 0 20px rgba(0, 119, 182, 0.3);
+}
+
+.work-hero p {
+  font-size: 22px;
+  color: whitesmoke;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.6);
+}
+
+/* Main Content */
+.work-main {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+/* Introduction Section */
+.intro-section {
+  margin-bottom: 80px;
+  background: rgba(0, 0, 0, 0.4);
+  padding: 50px 40px;
+  border-radius: 16px;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(0, 180, 216, 0.2);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+}
+
+.intro-content h2 {
+  font-size: 36px;
+  color: #00ddff;
+  margin-bottom: 25px;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.intro-content p {
+  font-size: 18px;
+  color: whitesmoke;
+  margin-bottom: 20px;
+  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.4);
+}
+
+.intro-content p:last-child {
+  margin-bottom: 0;
+  font-size: 20px;
+  color: #00b4d8;
+  font-weight: 600;
+}
+
+.intro-content strong {
+  color: #00ddff;
+}
+
+/* Process Section */
+.process-section {
+  margin-bottom: 80px;
+}
+
+.process-section h2 {
+  font-size: 42px;
+  color: #00ddff;
+  text-align: center;
+  margin-bottom: 50px;
+  text-shadow: 3px 3px 8px rgba(0, 0, 0, 0.7), 0 0 20px rgba(0, 119, 182, 0.3);
+}
+
+.process-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 30px;
+}
+
+.process-card {
+  background: rgba(0, 119, 182, 0.5);
+  padding: 35px 30px;
+  border-radius: 16px;
+  border: 1px solid rgba(0, 180, 216, 0.3);
+  text-align: center;
+  transition: all 0.3s;
+}
+
+.process-card:hover {
+  transform: translateY(-10px);
+  background: rgba(0, 119, 182, 0.7);
+  box-shadow: 0 12px 28px rgba(0, 180, 216, 0.4);
+  border-color: #00b4d8;
+}
+
+.process-icon {
+  font-size: 56px;
+  margin-bottom: 20px;
+}
+
+.process-card h3 {
+  font-size: 24px;
+  color: #00ddff;
+  margin-bottom: 15px;
+  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.4);
+}
+
+.process-card p {
+  font-size: 16px;
+  color: whitesmoke;
+  line-height: 1.7;
+  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.4);
+}
+
+/* Vulnerabilities Section */
+.vulnerabilities-section {
+  margin-bottom: 80px;
+  background: rgba(0, 0, 0, 0.4);
+  padding: 50px 40px;
+  border-radius: 16px;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(0, 180, 216, 0.2);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+}
+
+.vulnerabilities-section h2 {
+  font-size: 42px;
+  color: #00ddff;
+  text-align: center;
+  margin-bottom: 20px;
+  text-shadow: 3px 3px 8px rgba(0, 0, 0, 0.7), 0 0 20px rgba(0, 119, 182, 0.3);
+}
+
+.section-subtitle {
+  font-size: 18px;
+  color: #e0f2fe;
+  text-align: center;
+  margin-bottom: 40px;
+  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.4);
+}
+
+.vulnerabilities-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 25px;
+}
+
+.vulnerability-item {
+  background: rgba(0, 119, 182, 0.3);
+  padding: 25px;
+  border-radius: 12px;
+  border-left: 4px solid #00b4d8;
+  transition: all 0.3s;
+}
+
+.vulnerability-item:hover {
+  background: rgba(0, 119, 182, 0.6);
+  transform: translateX(5px);
+  border-left-color: #00ddff;
+}
+
+.vulnerability-header {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 12px;
+}
+
+.vulnerability-icon {
+  font-size: 32px;
+}
+
+.vulnerability-item h3 {
+  font-size: 20px;
+  color: #00ddff;
+  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.4);
+}
+
+.vulnerability-item p {
+  font-size: 15px;
+  color: whitesmoke;
+  line-height: 1.6;
+  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.4);
+}
+
+/* Approach Section */
+.approach-section {
+  margin-bottom: 80px;
+}
+
+.approach-section h2 {
+  font-size: 42px;
+  color: #00ddff;
+  text-align: center;
+  margin-bottom: 50px;
+  text-shadow: 3px 3px 8px rgba(0, 0, 0, 0.7), 0 0 20px rgba(0, 119, 182, 0.3);
+}
+
+.approach-container {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
+
+.approach-card {
+  background: rgba(0, 119, 182, 0.5);
+  padding: 35px 40px;
+  border-radius: 16px;
+  border: 1px solid rgba(0, 180, 216, 0.3);
+  transition: all 0.3s;
+  position: relative;
+}
+
+.approach-card.left {
+  margin-right: 60px;
+}
+
+.approach-card.right {
+  margin-left: 60px;
+}
+
+.approach-card:hover {
+  background: rgba(0, 119, 182, 0.7);
+  transform: scale(1.02);
+  box-shadow: 0 12px 28px rgba(0, 180, 216, 0.4);
+}
+
+.approach-card h3 {
+  font-size: 26px;
+  color: #00ddff;
+  margin-bottom: 15px;
+  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.4);
+}
+
+.approach-card p {
+  font-size: 17px;
+  color: whitesmoke;
+  line-height: 1.7;
+  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.4);
+}
+
+/* Technology Section */
+.technology-section {
+  margin-bottom: 80px;
+  background: rgba(0, 0, 0, 0.4);
+  padding: 50px 40px;
+  border-radius: 16px;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(0, 180, 216, 0.2);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+}
+
+.technology-section h2 {
+  font-size: 42px;
+  color: #00ddff;
+  text-align: center;
+  margin-bottom: 40px;
+  text-shadow: 3px 3px 8px rgba(0, 0, 0, 0.7), 0 0 20px rgba(0, 119, 182, 0.3);
+}
+
+.tech-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 30px;
+}
+
+.tech-card {
+  background: rgba(0, 119, 182, 0.15);
+  padding: 30px;
+  border-radius: 12px;
+  border: 1px solid rgba(0, 180, 216, 0.3);
+  transition: all 0.3s;
+}
+
+.tech-card:hover {
+  background: rgba(0, 119, 182, 0.25);
+  transform: translateY(-5px);
+  box-shadow: 0 8px 20px rgba(0, 180, 216, 0.3);
+}
+
+.tech-card h3 {
+  font-size: 22px;
+  color: #00ddff;
+  margin-bottom: 20px;
+  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.4);
+}
+
+.tech-card ul {
+  list-style: none;
+  padding: 0;
+}
+
+.tech-card li {
+  padding: 10px 0;
+  font-size: 16px;
+  color: whitesmoke;
+  border-bottom: 1px solid rgba(0, 180, 216, 0.2);
+  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.4);
+}
+
+.tech-card li:last-child {
+  border-bottom: none;
+}
+
+.tech-card li::before {
+  content: "✓ ";
+  color: #00b4d8;
+  font-weight: bold;
+  margin-right: 8px;
+}
+
+/* Benefits Section */
+.benefits-section {
+  margin-bottom: 80px;
+}
+
+.benefits-section h2 {
+  font-size: 42px;
+  color: #00ddff;
+  text-align: center;
+  margin-bottom: 50px;
+  text-shadow: 3px 3px 8px rgba(0, 0, 0, 0.7), 0 0 20px rgba(0, 119, 182, 0.3);
+}
+
+.benefits-container {
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+}
+
+.benefit-card {
+  display: flex;
+  gap: 30px;
+  align-items: center;
+  background: rgba(0, 119, 182, 0.5);
+  padding: 30px;
+  border-radius: 16px;
+  border: 1px solid rgba(0, 180, 216, 0.3);
+  transition: all 0.3s;
+}
+
+.benefit-card:hover {
+  background: rgba(0, 119, 182, 0.7);
+  transform: translateX(10px);
+  box-shadow: 0 8px 20px rgba(0, 180, 216, 0.4);
+}
+
+.benefit-number {
+  font-size: 48px;
+  font-weight: 700;
+  color: #00b4d8;
+  min-width: 80px;
+  text-align: center;
+  text-shadow: 0 0 20px rgba(0, 180, 216, 0.5);
+}
+
+.benefit-content h3 {
+  font-size: 22px;
+  color: #00ddff;
+  margin-bottom: 10px;
+  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.4);
+}
+
+.benefit-content p {
+  font-size: 16px;
+  color: whitesmoke;
+  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.4);
+}
+
+/* CTA Section */
+.cta-section {
+  text-align: center;
+  padding: 60px 40px;
+  margin-bottom: 40px;
+  background: rgba(0, 0, 0, 0.4);
+  border-radius: 16px;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(0, 180, 216, 0.2);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+}
+
+.cta-section h2 {
+  font-size: 42px;
+  color: #00ddff;
+  margin-bottom: 15px;
+  text-shadow: 3px 3px 8px rgba(0, 0, 0, 0.7), 0 0 20px rgba(0, 119, 182, 0.3);
+}
+
+.cta-section p {
+  font-size: 18px;
+  color: #e0f2fe;
+  margin-bottom: 40px;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.6);
+}
+
+.cta-buttons {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.btn-primary {
+  display: inline-block;
+  padding: 15px 40px;
+  background: #0077b6;
+  color: whitesmoke;
+  text-decoration: none;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 18px;
+  transition: all 0.3s;
+  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 4px 12px rgba(0, 119, 182, 0.4);
+}
+
+.btn-primary:hover {
+  background: #00b4d8;
+  transform: translateY(-3px);
+  box-shadow: 0 6px 20px rgba(0, 180, 216, 0.6);
+}
+
+.btn-secondary {
+  display: inline-block;
+  padding: 15px 40px;
+  background: rgba(0, 119, 182, 0.5);
+  color: whitesmoke;
+  text-decoration: none;
+  border-radius: 8px;
+  border: 2px solid #00b4d8;
+  font-weight: 600;
+  font-size: 18px;
+  transition: all 0.3s;
+  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.4);
+}
+
+.btn-secondary:hover {
+  background: #0077b6;
+  transform: translateY(-3px);
+  box-shadow: 0 6px 20px rgba(0, 180, 216, 0.5);
+}
+
+/* Footer */
+footer {
+  text-align: center;
+  padding: 20px;
+  background: rgba(0, 0, 0, 0.8);
+  color: whitesmoke;
+  font-size: 14px;
+  box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.3);
+  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.4);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  header {
+    flex-direction: column;
+    padding: 15px;
+    gap: 15px;
+  }
+
+  header nav {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .work-hero h1 {
+    font-size: 36px;
+  }
+
+  .work-hero p {
+    font-size: 18px;
+  }
+
+  .intro-section,
+  .vulnerabilities-section,
+  .technology-section,
+  .cta-section {
+    padding: 30px 20px;
+  }
+
+  .process-grid,
+  .vulnerabilities-grid,
+  .tech-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .approach-card.left,
+  .approach-card.right {
+    margin-left: 0;
+    margin-right: 0;
+  }
+
+  .benefit-card {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .benefit-number {
+    font-size: 40px;
+  }
+
+  .cta-buttons {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .btn-primary,
+  .btn-secondary {
+    width: 100%;
+  }
+}

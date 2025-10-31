@@ -1,0 +1,6 @@
+en la parte n de los model.py tiene que haber foreign key
+
+3 modelos, 3 entidades que estén relacionadas entre sí.
+Mostrar una vista de lista de cada entidad.
+
+CREAR PROYECTO DJNAGO Y HACER VISTAS

@@ -5,7 +5,7 @@
 }
 
 body {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-family: 'Space Grotesk', sans-serif;
   background: #f8f9fa;
   color: #1a2332;
 }
@@ -19,6 +19,7 @@ body {
 /* Header */
 .dashboard-header {
   padding: 20px 40px;
+  font-weight: 600;
 }
 
 .logo {
@@ -42,7 +43,7 @@ body {
   color: white;
   text-decoration: none;
   border-radius: 8px;
-  font-weight: 500;
+  font-weight: 600;
   transition: all 0.3s;
 }
 
@@ -90,7 +91,7 @@ body {
   color: #64748b;
 }
 
-.capital-change.positive {
+.capital-change .positive {
   color: #10b981;
 }
 
