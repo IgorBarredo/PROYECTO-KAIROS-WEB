@@ -1,0 +1,12 @@
+Django==4.2.26
+Pillow==10.1.0
+pyotp==2.9.0
+qrcode==7.4.2
+python-decouple==3.8
+
+# Para producción
+gunicorn==21.2.0
+psycopg2-binary==2.9.9
+
+# Para desarrollo
+django-debug-toolbar==4.2.0
