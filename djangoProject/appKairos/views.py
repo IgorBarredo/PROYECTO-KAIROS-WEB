@@ -37,7 +37,7 @@ def registro_view(request):
     Conecta con: register_en.html
     """
     if request.user.is_authenticated:
-        return redirect('dashboard')
+        return redirect('appKairos:dashboard')
     
     if request.method == 'POST':
         form = RegistroUsuarioForm(request.POST)
@@ -57,7 +57,7 @@ def registro_view(request):
             
             # Enviar email de verificación
             verification_url = request.build_absolute_uri(
-                reverse('verificar_email', kwargs={'token': token})
+                reverse('appKairos:verificar_email', kwargs={'token': token})
             )
             
             send_mail(
@@ -83,7 +83,7 @@ def registro_view(request):
             )
             
             messages.success(request, 'Cuenta creada exitosamente. Por favor verifica tu email.')
-            return redirect('verify_email_sent')
+            return redirect('appKairos:verify_email_sent')
         else:
             messages.error(request, 'Por favor corrige los errores en el formulario.')
     else:
@@ -98,7 +98,7 @@ def login_view(request):
     Conecta con: login_en.html
     """
     if request.user.is_authenticated:
-        return redirect('dashboard')
+        return redirect('appKairos:dashboard')
     
     if request.method == 'POST':
         form = LoginForm(request, data=request.POST)
@@ -127,14 +127,14 @@ def login_view(request):
                 if user.tiene_2fa_activo:
                     # Guardar user_id en sesión para verificación 2FA
                     request.session['pre_2fa_user_id'] = user.id
-                    return redirect('verificar_2fa')
+                    return redirect('appKairos:verificar_2fa')
                 else:
                     # Login directo
                     login(request, user)
                     if not recordarme:
                         request.session.set_expiry(0)
                     messages.success(request, f'Bienvenido de vuelta, {user.first_name or user.username}!')
-                    return redirect('dashboard')
+                    return redirect('appKairos:dashboard')
             else:
                 # Registrar intento fallido
                 try:
@@ -160,7 +160,7 @@ def logout_view(request):
     """Vista de cierre de sesión"""
     logout(request)
     messages.success(request, 'Has cerrado sesión exitosamente.')
-    return redirect('index')
+    return redirect('appKairos:index')
 
 
 def verify_email_sent_view(request):
@@ -193,11 +193,11 @@ def verificar_email_view(request, token):
         token_obj.save()
         
         messages.success(request, '¡Email verificado exitosamente! Ya puedes iniciar sesión.')
-        return redirect('login')
+        return redirect('appKairos:login')
         
     except TokenVerificacionEmail.DoesNotExist:
         messages.error(request, 'Token de verificación inválido o expirado.')
-        return redirect('index')
+        return redirect('appKairos:index')
 
 
 def reenviar_verificacion_view(request):
@@ -220,7 +220,7 @@ def reenviar_verificacion_view(request):
             
             # Enviar email
             verification_url = request.build_absolute_uri(
-                reverse('verificar_email', kwargs={'token': token})
+                reverse('appKairos:verificar_email', kwargs={'token': token})
             )
             
             send_mail(
@@ -247,7 +247,7 @@ def reenviar_verificacion_view(request):
         except Usuario.DoesNotExist:
             messages.error(request, 'No se encontró una cuenta pendiente de verificación con ese email.')
     
-    return redirect('verify_email_sent')
+    return redirect('appKairos:verify_email_sent')
 
 
 # ============================================================================
@@ -261,7 +261,7 @@ def activar_2fa_view(request):
     
     if usuario.tiene_2fa_activo:
         messages.info(request, 'Ya tienes 2FA activado.')
-        return redirect('dashboard')
+        return redirect('appKairos:dashboard')
     
     if request.method == 'POST':
         form = Activar2FAForm(request.POST)
@@ -274,7 +274,7 @@ def activar_2fa_view(request):
                 usuario.tiene_2fa_activo = True
                 usuario.save()
                 messages.success(request, '¡2FA activado exitosamente!')
-                return redirect('dashboard')
+                return redirect('appKairos:dashboard')
             else:
                 messages.error(request, 'Código incorrecto. Por favor intenta de nuevo.')
     else:
@@ -315,12 +315,12 @@ def verificar_2fa_view(request):
     """Vista para verificar código 2FA durante el login"""
     user_id = request.session.get('pre_2fa_user_id')
     if not user_id:
-        return redirect('login')
+        return redirect('appKairos:login')
     
     try:
         usuario = Usuario.objects.get(id=user_id)
     except Usuario.DoesNotExist:
-        return redirect('login')
+        return redirect('appKairos:login')
     
     if request.method == 'POST':
         form = Verificar2FAForm(request.POST)
@@ -334,7 +334,7 @@ def verificar_2fa_view(request):
                 login(request, usuario)
                 del request.session['pre_2fa_user_id']
                 messages.success(request, f'Bienvenido de vuelta, {usuario.first_name or usuario.username}!')
-                return redirect('dashboard')
+                return redirect('appKairos:dashboard')
             else:
                 messages.error(request, 'Código 2FA incorrecto.')
     else:
@@ -351,7 +351,7 @@ def desactivar_2fa_view(request):
         usuario.tiene_2fa_activo = False
         usuario.save()
         messages.success(request, '2FA desactivado exitosamente.')
-    return redirect('dashboard')
+    return redirect('appKairos:dashboard')
 
 
 # ============================================================================
@@ -369,7 +369,7 @@ def dashboard_view(request):
     # Obtener productos contratados
     productos_contratados = ProductoContratado.objects.filter(
         usuario=usuario
-    ).select_related('producto', 'producto__mercado')
+    ).select_related('producto').prefetch_related('producto__mercados')
     
     # Calcular capital total
     capital_total = productos_contratados.filter(
@@ -393,7 +393,9 @@ def dashboard_view(request):
     porcentajes = [float(r.porcentaje_cambio) for r in resultados]
     
     # Obtener productos disponibles para contratar
-    productos_disponibles = Producto.objects.filter(activo=True)
+    productos_disponibles = Producto.objects.filter(activo=True).exclude(
+        id__in=productos_contratados.values_list('producto_id', flat=True)
+    )
     
     # Estadísticas del usuario
     total_invertido = productos_contratados.aggregate(
@@ -438,7 +440,7 @@ def contratar_producto_view(request, producto_id):
             contrato.save()
             
             messages.success(request, f'Producto "{producto.nombre}" contratado exitosamente.')
-            return redirect('dashboard')
+            return redirect('appKairos:dashboard')
     else:
         form = ContratarProductoForm(initial={'producto': producto})
     
@@ -459,7 +461,7 @@ def cancelar_producto_view(request, contrato_id):
         contrato.fecha_fin = timezone.now()
         contrato.save()
         messages.success(request, 'Producto cancelado exitosamente.')
-        return redirect('dashboard')
+        return redirect('appKairos:dashboard')
     
     return render(request, 'cancelar_producto.html', {'contrato': contrato})
 
@@ -476,7 +478,7 @@ def perfil_view(request):
         if form.is_valid():
             form.save()
             messages.success(request, 'Perfil actualizado exitosamente.')
-            return redirect('perfil')
+            return redirect('appKairos:perfil')
     else:
         form = ActualizarPerfilForm(instance=request.user)
     
@@ -502,7 +504,7 @@ def cambiar_password_view(request):
                 update_session_auth_hash(request, request.user)
                 
                 messages.success(request, 'Contraseña cambiada exitosamente.')
-                return redirect('perfil')
+                return redirect('appKairos:perfil')
             else:
                 messages.error(request, 'Contraseña actual incorrecta.')
     else:
@@ -628,10 +630,10 @@ def contacto_view(request):
         )
         
         messages.success(request, 'Mensaje enviado exitosamente. Te responderemos pronto.')
-        return redirect('index')
+        return redirect('appKairos:index')
     else:
         messages.error(request, 'Por favor corrige los errores en el formulario.')
-        return redirect('index')
+        return redirect('appKairos:index')
 
 
 # ============================================================================

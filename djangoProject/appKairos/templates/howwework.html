@@ -1,264 +1,266 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>How We Work - Proyecto Kairos</title>
-  <link rel="stylesheet" href="css/howwework.css">
-  <link rel="stylesheet" href="css/headerfooter.css">
-  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;500;700&display=swap" rel="stylesheet">
-</head>
-<body>
+{% extends 'base.html' %}
+{% load static %}
 
-  <!-- Header -->
-  <header>
-    <div class="logo">P.K. Proyecto Kairos</div>
-    <nav>
-      <a href="index_en.html" class="linked">Home</a>
-      <a href="index_en.html#graph" class="linked">Results</a>
-      <a href="index_en.html#productos" class="linked">Products</a>
-      <a href="howwework.html" class="linked">How we work</a>
-      <a href="newsletter_en.html" class="linked" target="_blank">Newsletter</a>
-      <a href="index_en.html#contacto" class="linked">Contact</a>
-      <a href="login_en.html" class="auth-btn login-btn">Login</a>
-      <a href="register_en.html" class="auth-btn register-btn">Register</a>
-    </nav>
-  </header>
+{% block title %}How We Work - Proyecto Kairos{% endblock %}
 
-  <!-- Hero Section -->
-  <section class="work-hero">
-    <h1>HOW WE WORK</h1>
-    <p>Unveiling Market Vulnerabilities Through Advanced Research</p>
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/howwework.css' %}">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;500;700&display=swap" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+<!-- Header -->
+<header>
+  <div class="logo">P.K. Proyecto Kairos</div>
+  <nav>
+    <a href="{% url 'appKairos:index' %}" class="linked">Home</a>
+    <a href="{% url 'appKairos:index' %}#graph" class="linked">Results</a>
+    <a href="{% url 'appKairos:index' %}#productos" class="linked">Products</a>
+    <a href="{% url 'appKairos:how_we_work' %}" class="linked">How we work</a>
+    <a href="{% url 'appKairos:newsletter' %}" class="linked" target="_blank">Newsletter</a>
+    <a href="{% url 'appKairos:index' %}#contacto" class="linked">Contact</a>
+    {% if user.is_authenticated %}
+      <a href="{% url 'appKairos:dashboard' %}" class="auth-btn login-btn">Dashboard</a>
+      <a href="{% url 'appKairos:logout' %}" class="auth-btn register-btn">Logout</a>
+    {% else %}
+      <a href="{% url 'appKairos:login' %}" class="auth-btn login-btn">Login</a>
+      <a href="{% url 'appKairos:register' %}" class="auth-btn register-btn">Register</a>
+    {% endif %}
+  </nav>
+</header>
+
+<!-- Hero Section -->
+<section class="work-hero">
+  <h1>HOW WE WORK</h1>
+  <p>Unveiling Market Vulnerabilities Through Advanced Research</p>
+</section>
+
+<!-- Main Content -->
+<main class="work-main">
+
+  <!-- Introduction -->
+  <section class="intro-section">
+    <div class="intro-content">
+      <h2>Our Mission</h2>
+      <p>At Proyecto Kairos, we specialize in <strong>market vulnerability research</strong> and <strong>commercial behavior analysis</strong>. Our team dedicates itself to identifying inefficiencies, patterns, and exploitable opportunities within financial markets to create sophisticated algorithms that generate consistent returns for ourselves and our clients.</p>
+      <p>We don't follow the market — we understand it, predict it, and profit from it.</p>
+    </div>
   </section>
 
-  <!-- Main Content -->
-  <main class="work-main">
-
-    <!-- Introduction -->
-    <section class="intro-section">
-      <div class="intro-content">
-        <h2>Our Mission</h2>
-        <p>At Proyecto Kairos, we specialize in <strong>market vulnerability research</strong> and <strong>commercial behavior analysis</strong>. Our team dedicates itself to identifying inefficiencies, patterns, and exploitable opportunities within financial markets to create sophisticated algorithms that generate consistent returns for ourselves and our clients.</p>
-        <p>We don't follow the market — we understand it, predict it, and profit from it.</p>
-      </div>
-    </section>
-
-    <!-- Research Process -->
-    <section class="process-section">
-      <h2>Our Research Process</h2>
+  <!-- Research Process -->
+  <section class="process-section">
+    <h2>Our Research Process</h2>
+    
+    <div class="process-grid">
       
-      <div class="process-grid">
-        
-        <div class="process-card">
-          <div class="process-icon">🔍</div>
-          <h3>Market Analysis</h3>
-          <p>We continuously monitor multiple financial markets, analyzing price movements, volume patterns, and behavioral trends. Our research identifies recurring vulnerabilities and predictable market inefficiencies.</p>
-        </div>
-
-        <div class="process-card">
-          <div class="process-icon">📊</div>
-          <h3>Behavior Modeling</h3>
-          <p>We study commercial behavior patterns of institutional and retail traders. By understanding how different market participants react to various conditions, we can anticipate movements before they happen.</p>
-        </div>
-
-        <div class="process-card">
-          <div class="process-icon">🧬</div>
-          <h3>Algorithm Development</h3>
-          <p>Our findings are transformed into sophisticated trading algorithms. These systems are designed to exploit identified vulnerabilities with precision, speed, and consistency that human traders cannot match.</p>
-        </div>
-
-        <div class="process-card">
-          <div class="process-icon">⚡</div>
-          <h3>Execution & Optimization</h3>
-          <p>Algorithms are deployed in real market conditions, constantly monitored and refined. We optimize performance based on live data, ensuring our systems adapt to changing market dynamics.</p>
-        </div>
-
+      <div class="process-card">
+        <div class="process-icon">🔍</div>
+        <h3>Market Analysis</h3>
+        <p>We continuously monitor multiple financial markets, analyzing price movements, volume patterns, and behavioral trends. Our research identifies recurring vulnerabilities and predictable market inefficiencies.</p>
       </div>
-    </section>
 
-    <!-- What We Look For -->
-    <section class="vulnerabilities-section">
-      <h2>What We Look For</h2>
-      <p class="section-subtitle">Our research focuses on identifying specific market vulnerabilities that can be systematically exploited:</p>
+      <div class="process-card">
+        <div class="process-icon">📊</div>
+        <h3>Behavior Modeling</h3>
+        <p>We study commercial behavior patterns of institutional and retail traders. By understanding how different market participants react to various conditions, we can anticipate movements before they happen.</p>
+      </div>
+
+      <div class="process-card">
+        <div class="process-icon">🧬</div>
+        <h3>Algorithm Development</h3>
+        <p>Our findings are transformed into sophisticated trading algorithms. These systems are designed to exploit identified vulnerabilities with precision, speed, and consistency that human traders cannot match.</p>
+      </div>
+
+      <div class="process-card">
+        <div class="process-icon">⚡</div>
+        <h3>Execution & Optimization</h3>
+        <p>Algorithms are deployed in real market conditions, constantly monitored and refined. We optimize performance based on live data, ensuring our systems adapt to changing market dynamics.</p>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- What We Look For -->
+  <section class="vulnerabilities-section">
+    <h2>What We Look For</h2>
+    <p class="section-subtitle">Our research focuses on identifying specific market vulnerabilities that can be systematically exploited:</p>
+    
+    <div class="vulnerabilities-grid">
       
-      <div class="vulnerabilities-grid">
-        
-        <div class="vulnerability-item">
-          <div class="vulnerability-header">
-            <span class="vulnerability-icon">💹</span>
-            <h3>Price Inefficiencies</h3>
-          </div>
-          <p>Temporary mismatches between asset prices and their true value, often caused by emotional trading, news overreactions, or liquidity gaps.</p>
+      <div class="vulnerability-item">
+        <div class="vulnerability-header">
+          <span class="vulnerability-icon">💹</span>
+          <h3>Price Inefficiencies</h3>
         </div>
-
-        <div class="vulnerability-item">
-          <div class="vulnerability-header">
-            <span class="vulnerability-icon">📈</span>
-            <h3>Behavioral Patterns</h3>
-          </div>
-          <p>Predictable reactions from market participants during specific conditions — fear-driven sell-offs, FOMO buying, and systematic profit-taking behaviors.</p>
-        </div>
-
-        <div class="vulnerability-item">
-          <div class="vulnerability-header">
-            <span class="vulnerability-icon">⏰</span>
-            <h3>Timing Advantages</h3>
-          </div>
-          <p>Market openings, closings, news releases, and economic data publications create temporary windows where informed algorithms can capitalize on delayed reactions.</p>
-        </div>
-
-        <div class="vulnerability-item">
-          <div class="vulnerability-header">
-            <span class="vulnerability-icon">🔄</span>
-            <h3>Correlation Breaks</h3>
-          </div>
-          <p>When historically correlated assets diverge temporarily, our algorithms detect and exploit these anomalies before they normalize.</p>
-        </div>
-
-        <div class="vulnerability-item">
-          <div class="vulnerability-header">
-            <span class="vulnerability-icon">🎯</span>
-            <h3>Liquidity Traps</h3>
-          </div>
-          <p>Areas where large institutional orders create predictable price movements, allowing our systems to position ahead of these flows.</p>
-        </div>
-
-        <div class="vulnerability-item">
-          <div class="vulnerability-header">
-            <span class="vulnerability-icon">🌊</span>
-            <h3>Momentum Waves</h3>
-          </div>
-          <p>Self-reinforcing price movements driven by algorithmic trading systems and retail herding behavior that can be predicted and exploited.</p>
-        </div>
-
+        <p>Temporary mismatches between asset prices and their true value, often caused by emotional trading, news overreactions, or liquidity gaps.</p>
       </div>
-    </section>
 
-    <!-- Our Approach -->
-    <section class="approach-section">
-      <h2>Our Strategic Approach</h2>
+      <div class="vulnerability-item">
+        <div class="vulnerability-header">
+          <span class="vulnerability-icon">📈</span>
+          <h3>Behavioral Patterns</h3>
+        </div>
+        <p>Predictable reactions from market participants during specific conditions — fear-driven sell-offs, FOMO buying, and systematic profit-taking behaviors.</p>
+      </div>
+
+      <div class="vulnerability-item">
+        <div class="vulnerability-header">
+          <span class="vulnerability-icon">⏰</span>
+          <h3>Timing Advantages</h3>
+        </div>
+        <p>Market openings, closings, news releases, and economic data publications create temporary windows where informed algorithms can capitalize on delayed reactions.</p>
+      </div>
+
+      <div class="vulnerability-item">
+        <div class="vulnerability-header">
+          <span class="vulnerability-icon">🔄</span>
+          <h3>Correlation Breaks</h3>
+        </div>
+        <p>When historically correlated assets diverge temporarily, our algorithms detect and exploit these anomalies before they normalize.</p>
+      </div>
+
+      <div class="vulnerability-item">
+        <div class="vulnerability-header">
+          <span class="vulnerability-icon">🎯</span>
+          <h3>Liquidity Traps</h3>
+        </div>
+        <p>Areas where large institutional orders create predictable price movements, allowing our systems to position ahead of these flows.</p>
+      </div>
+
+      <div class="vulnerability-item">
+        <div class="vulnerability-header">
+          <span class="vulnerability-icon">🌊</span>
+          <h3>Momentum Waves</h3>
+        </div>
+        <p>Self-reinforcing price movements driven by algorithmic trading systems and retail herding behavior that can be predicted and exploited.</p>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- Our Approach -->
+  <section class="approach-section">
+    <h2>Our Strategic Approach</h2>
+    
+    <div class="approach-container">
       
-      <div class="approach-container">
-        
-        <div class="approach-card left">
-          <h3>Data-Driven Research</h3>
-          <p>Every decision is backed by extensive data analysis. We process millions of data points daily, using statistical models and machine learning to identify patterns invisible to traditional analysis.</p>
-        </div>
-
-        <div class="approach-card right">
-          <h3>Systematic Exploitation</h3>
-          <p>Once a vulnerability is identified and validated, we develop specific algorithms to exploit it systematically. Our systems operate 24/7, never missing an opportunity.</p>
-        </div>
-
-        <div class="approach-card left">
-          <h3>Risk Management</h3>
-          <p>Every algorithm includes sophisticated risk controls. We never risk more than necessary, and our systems are designed to preserve capital above all else.</p>
-        </div>
-
-        <div class="approach-card right">
-          <h3>Continuous Evolution</h3>
-          <p>Markets evolve, and so do we. Our research never stops. We constantly update our algorithms to adapt to new market conditions and emerging vulnerabilities.</p>
-        </div>
-
+      <div class="approach-card left">
+        <h3>Data-Driven Research</h3>
+        <p>Every decision is backed by extensive data analysis. We process millions of data points daily, using statistical models and machine learning to identify patterns invisible to traditional analysis.</p>
       </div>
-    </section>
 
-    <!-- Technology Stack -->
-    <section class="technology-section">
-      <h2>Our Technology</h2>
+      <div class="approach-card right">
+        <h3>Systematic Exploitation</h3>
+        <p>Once a vulnerability is identified and validated, we develop specific algorithms to exploit it systematically. Our systems operate 24/7, never missing an opportunity.</p>
+      </div>
+
+      <div class="approach-card left">
+        <h3>Risk Management</h3>
+        <p>Every algorithm includes sophisticated risk controls. We never risk more than necessary, and our systems are designed to preserve capital above all else.</p>
+      </div>
+
+      <div class="approach-card right">
+        <h3>Continuous Evolution</h3>
+        <p>Markets evolve, and so do we. Our research never stops. We constantly update our algorithms to adapt to new market conditions and emerging vulnerabilities.</p>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- Technology Stack -->
+  <section class="technology-section">
+    <h2>Our Technology</h2>
+    
+    <div class="tech-grid">
       
-      <div class="tech-grid">
-        
-        <div class="tech-card">
-          <h3>Advanced Analytics</h3>
-          <ul>
-            <li>Machine Learning Models</li>
-            <li>Statistical Arbitrage</li>
-            <li>Sentiment Analysis</li>
-            <li>Pattern Recognition</li>
-          </ul>
-        </div>
-
-        <div class="tech-card">
-          <h3>High-Performance Systems</h3>
-          <ul>
-            <li>Low-Latency Execution</li>
-            <li>Real-Time Data Processing</li>
-            <li>Parallel Computing</li>
-            <li>Cloud Infrastructure</li>
-          </ul>
-        </div>
-
-        <div class="tech-card">
-          <h3>Risk Controls</h3>
-          <ul>
-            <li>Position Size Management</li>
-            <li>Stop-Loss Automation</li>
-            <li>Drawdown Protection</li>
-            <li>Portfolio Diversification</li>
-          </ul>
-        </div>
-
+      <div class="tech-card">
+        <h3>Advanced Analytics</h3>
+        <ul>
+          <li>Machine Learning Models</li>
+          <li>Statistical Arbitrage</li>
+          <li>Sentiment Analysis</li>
+          <li>Pattern Recognition</li>
+        </ul>
       </div>
-    </section>
 
-    <!-- Client Benefits -->
-    <section class="benefits-section">
-      <h2>Benefits for Our Clients</h2>
+      <div class="tech-card">
+        <h3>High-Performance Systems</h3>
+        <ul>
+          <li>Low-Latency Execution</li>
+          <li>Real-Time Data Processing</li>
+          <li>Parallel Computing</li>
+          <li>Cloud Infrastructure</li>
+        </ul>
+      </div>
+
+      <div class="tech-card">
+        <h3>Risk Controls</h3>
+        <ul>
+          <li>Position Size Management</li>
+          <li>Stop-Loss Automation</li>
+          <li>Drawdown Protection</li>
+          <li>Portfolio Diversification</li>
+        </ul>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- Client Benefits -->
+  <section class="benefits-section">
+    <h2>Benefits for Our Clients</h2>
+    
+    <div class="benefits-container">
       
-      <div class="benefits-container">
-        
-        <div class="benefit-card">
-          <div class="benefit-number">01</div>
-          <div class="benefit-content">
-            <h3>Access to Professional Research</h3>
-            <p>Benefit from institutional-grade market research without needing a research team.</p>
-          </div>
+      <div class="benefit-card">
+        <div class="benefit-number">01</div>
+        <div class="benefit-content">
+          <h3>Access to Professional Research</h3>
+          <p>Benefit from institutional-grade market research without needing a research team.</p>
         </div>
-
-        <div class="benefit-card">
-          <div class="benefit-number">02</div>
-          <div class="benefit-content">
-            <h3>Proven Algorithms</h3>
-            <p>Our systems are battle-tested and continuously optimized for real market conditions.</p>
-          </div>
-        </div>
-
-        <div class="benefit-card">
-          <div class="benefit-number">03</div>
-          <div class="benefit-content">
-            <h3>Passive Income Generation</h3>
-            <p>Your capital works for you 24/7 while you focus on other priorities.</p>
-          </div>
-        </div>
-
-        <div class="benefit-card">
-          <div class="benefit-number">04</div>
-          <div class="benefit-content">
-            <h3>Transparent Performance</h3>
-            <p>Full access to performance metrics, trade history, and real-time portfolio monitoring.</p>
-          </div>
-        </div>
-
       </div>
-    </section>
 
-    <!-- CTA Section -->
-    <section class="cta-section">
-      <h2>Ready to Start?</h2>
-      <p>Join our clients who are already benefiting from our market research and algorithmic trading systems.</p>
-      <div class="cta-buttons">
-        <a href="connect_en.html" class="btn-primary">Connect to MT5</a>
-        <a href="index_en.html#productos" class="btn-secondary">View Products</a>
+      <div class="benefit-card">
+        <div class="benefit-number">02</div>
+        <div class="benefit-content">
+          <h3>Proven Algorithms</h3>
+          <p>Our systems are battle-tested and continuously optimized for real market conditions.</p>
+        </div>
       </div>
-    </section>
 
-  </main>
+      <div class="benefit-card">
+        <div class="benefit-number">03</div>
+        <div class="benefit-content">
+          <h3>Passive Income Generation</h3>
+          <p>Your capital works for you 24/7 while you focus on other priorities.</p>
+        </div>
+      </div>
 
-  <!-- Footer -->
-  <footer>
-    <p>© 2025 P.K. Proyecto Kairos. All rights reserved.</p>
-  </footer>
+      <div class="benefit-card">
+        <div class="benefit-number">04</div>
+        <div class="benefit-content">
+          <h3>Transparent Performance</h3>
+          <p>Full access to performance metrics, trade history, and real-time portfolio monitoring.</p>
+        </div>
+      </div>
 
-</body>
-</html>
+    </div>
+  </section>
+
+  <!-- CTA Section -->
+  <section class="cta-section">
+    <h2>Ready to Start?</h2>
+    <p>Join our clients who are already benefiting from our market research and algorithmic trading systems.</p>
+    <div class="cta-buttons">
+      <a href="{% url 'appKairos:connect_mt5' %}" class="btn-primary">Connect to MT5</a>
+      <a href="{% url 'appKairos:index' %}#productos" class="btn-secondary">View Products</a>
+    </div>
+  </section>
+
+</main>
+
+<!-- Footer -->
+<footer>
+  <p>© 2025 P.K. Proyecto Kairos. All rights reserved.</p>
+</footer>
+{% endblock %}

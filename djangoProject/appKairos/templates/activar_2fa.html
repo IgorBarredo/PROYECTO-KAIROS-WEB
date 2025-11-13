@@ -1,0 +1,130 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Activate 2FA - Proyecto Kairos</title>
+  <link rel="stylesheet" href="{% static 'css/auth2fa.css' %}">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  
+  <div class="auth-container">
+    <div class="auth-box twofa-box">
+      
+      <div class="back-link">
+        <a href="{% url 'appKairos:dashboard' %}">← Back to Dashboard</a>
+      </div>
+
+      <h1>Activate Two-Factor Authentication</h1>
+      <p class="subtitle">Secure your account with Google Authenticator</p>
+      
+      <div class="twofa-steps">
+        
+        <!-- Step 1 -->
+        <div class="step-card">
+          <div class="step-number">1</div>
+          <div class="step-content">
+            <h3>Download Google Authenticator</h3>
+            <p>Install the Google Authenticator app on your smartphone:</p>
+            <div class="app-links">
+              <a href="https://apps.apple.com/app/google-authenticator/id388497605" target="_blank" class="app-btn">
+                <span>📱</span> iOS App Store
+              </a>
+              <a href="https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2" target="_blank" class="app-btn">
+                <span>🤖</span> Google Play
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 2 -->
+        <div class="step-card">
+          <div class="step-number">2</div>
+          <div class="step-content">
+            <h3>Scan QR Code</h3>
+            <p>Open Google Authenticator and scan this QR code:</p>
+            <div class="qr-container">
+              <img src="data:image/png;base64,{{ qr_code }}" alt="QR Code" class="qr-code">
+            </div>
+            <div class="secret-key-box">
+              <p><strong>Manual Entry Key:</strong></p>
+              <code class="secret-key">{{ secret_key }}</code>
+              <button onclick="copySecretKey()" class="copy-btn">Copy Key</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 3 -->
+        <div class="step-card">
+          <div class="step-number">3</div>
+          <div class="step-content">
+            <h3>Verify Code</h3>
+            <p>Enter the 6-digit code from Google Authenticator:</p>
+            
+            <form method="POST" class="auth-form">
+              {% csrf_token %}
+              
+              <div class="form-group">
+                <label for="codigo_verificacion">Verification Code</label>
+                <input 
+                  type="text" 
+                  id="codigo_verificacion" 
+                  name="codigo_verificacion"
+                  maxlength="6" 
+                  pattern="[0-9]{6}"
+                  inputmode="numeric"
+                  placeholder="000000"
+                  required
+                  autofocus
+                >
+                {% if form.codigo_verificacion.errors %}
+                  <span class="error-message">{{ form.codigo_verificacion.errors.0 }}</span>
+                {% endif %}
+              </div>
+              
+              <button type="submit" class="auth-btn">Activate 2FA</button>
+            </form>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="warning-box-2fa">
+        <span class="warning-icon">⚠️</span>
+        <div>
+          <strong>Important:</strong> Save your secret key in a secure place. If you lose access to your authenticator app, you'll need this key to regain access to your account.
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    function copySecretKey() {
+      const secretKey = document.querySelector('.secret-key').textContent;
+      navigator.clipboard.writeText(secretKey).then(() => {
+        const btn = document.querySelector('.copy-btn');
+        btn.textContent = '✓ Copied!';
+        btn.style.background = '#10b981';
+        setTimeout(() => {
+          btn.textContent = 'Copy Key';
+          btn.style.background = '';
+        }, 2000);
+      });
+    }
+
+    // Auto-submit cuando se ingresan 6 dígitos
+    document.getElementById('codigo_verificacion').addEventListener('input', function(e) {
+      if (this.value.length === 6) {
+        // Validar que sean solo números
+        if (/^\d{6}$/.test(this.value)) {
+          this.form.submit();
+        }
+      }
+    });
+  </script>
+
+</body>
+</html>

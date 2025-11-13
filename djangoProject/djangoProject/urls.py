@@ -10,7 +10,9 @@ urlpatterns = [
 
 # Servir archivos estáticos y media en desarrollo
 if settings.DEBUG:
-    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+    # Servir archivos estáticos desde STATICFILES_DIRS
+    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATICFILES_DIRS[0])
+    # Servir archivos media
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 # Personalización del admin

@@ -1,61 +1,74 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Register - Proyecto Kairos</title>
-  <link rel="stylesheet" href="css/auth.css">
-</head>
-<body>
-  <div class="auth-container">
-    <div class="auth-box">
-      <h1>Create Account</h1>
-      <p class="subtitle">Join Proyecto Kairos today</p>
-      
-      <form id="registerForm" class="auth-form">
-        <div class="form-group">
-          <label for="name">Full Name</label>
-          <input type="text" id="name" required>
-        </div>
-        
-        <div class="form-group">
-          <label for="email">Email</label>
-          <input type="email" id="email" required>
-        </div>
-        
-        <div class="form-group">
-          <label for="password">Password</label>
-          <input type="password" id="password" required minlength="8">
-        </div>
-        
-        <div class="form-group">
-          <label for="confirmPassword">Confirm Password</label>
-          <input type="password" id="confirmPassword" required minlength="8">
-        </div>
-        
-        <button type="submit" class="auth-btn">Create Account</button>
-      </form>
-      
-      <p class="switch-text">Already have an account? <a href="login_en.html">Login here</a></p>
-      <a href="index_en.html" class="back-home">← Back to Home</a>
-    </div>
-  </div>
+{% extends 'base.html' %}
+{% load static %}
 
-  <script>
-    document.getElementById('registerForm').addEventListener('submit', function(e) {
-      e.preventDefault();
+{% block title %}Register - Proyecto Kairos{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/auth.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+  <div class="auth-box">
+    <h1>Create Account</h1>
+    <p class="subtitle">Join Proyecto Kairos today</p>
+    
+    <form method="POST" class="auth-form">
+      {% csrf_token %}
       
-      const password = document.getElementById('password').value;
-      const confirmPassword = document.getElementById('confirmPassword').value;
+      <div class="form-group">
+        <label for="username">Username</label>
+        <input type="text" id="username" name="username" required>
+        {% if form.username.errors %}
+          <span class="error-message">{{ form.username.errors.0 }}</span>
+        {% endif %}
+      </div>
       
-      if (password !== confirmPassword) {
-        alert('Passwords do not match!');
-        return;
-      }
+      <div class="form-group">
+        <label for="email">Email</label>
+        <input type="email" id="email" name="email" required>
+        {% if form.email.errors %}
+          <span class="error-message">{{ form.email.errors.0 }}</span>
+        {% endif %}
+      </div>
       
-      // Simular registro exitoso - redirigir a verificación
-      window.location.href = 'verify-email_en.html';
-    });
-  </script>
-</body>
-</html>
+      <div class="form-group">
+        <label for="first_name">First Name</label>
+        <input type="text" id="first_name" name="first_name">
+        {% if form.first_name.errors %}
+          <span class="error-message">{{ form.first_name.errors.0 }}</span>
+        {% endif %}
+      </div>
+      
+      <div class="form-group">
+        <label for="last_name">Last Name</label>
+        <input type="text" id="last_name" name="last_name">
+        {% if form.last_name.errors %}
+          <span class="error-message">{{ form.last_name.errors.0 }}</span>
+        {% endif %}
+      </div>
+      
+      <div class="form-group">
+        <label for="password1">Password</label>
+        <input type="password" id="password1" name="password1" required minlength="8">
+        {% if form.password1.errors %}
+          <span class="error-message">{{ form.password1.errors.0 }}</span>
+        {% endif %}
+      </div>
+      
+      <div class="form-group">
+        <label for="password2">Confirm Password</label>
+        <input type="password" id="password2" name="password2" required minlength="8">
+        {% if form.password2.errors %}
+          <span class="error-message">{{ form.password2.errors.0 }}</span>
+        {% endif %}
+      </div>
+      
+      <button type="submit" class="auth-btn">Create Account</button>
+    </form>
+    
+    <p class="switch-text">Already have an account? <a href="{% url 'appKairos:login' %}">Login here</a></p>
+    <a href="{% url 'appKairos:index' %}" class="back-home">← Back to Home</a>
+  </div>
+</div>
+{% endblock %}

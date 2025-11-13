@@ -38,9 +38,15 @@ class Usuario(AbstractUser):
     )
     
     # Campos de autenticación de dos factores (2FA)
-    doble_autenticacion_activa = models.BooleanField(
+    tiene_2fa_activo = models.BooleanField(
         default=False,
         help_text="Indica si el usuario tiene activada la autenticación de dos factores"
+    )
+    secreto_2fa = models.CharField(
+        max_length=32,
+        blank=True,
+        null=True,
+        help_text="Secreto para generar códigos TOTP"
     )
     fecha_activacion_2fa = models.DateTimeField(
         null=True,
@@ -61,8 +67,8 @@ class Usuario(AbstractUser):
     
     def calcular_capital_total(self):
         """Calcula el capital total sumando todos los productos contratados"""
-        total = self.productos_contratados.filter(activo=True).aggregate(
-            total=models.Sum('monto_invertido')
+        total = self.productos_contratados.filter(estado='activo').aggregate(
+            total=models.Sum('capital_actual')
         )['total'] or Decimal('0')
         self.capital_total = total
         self.save()
@@ -118,9 +124,10 @@ class ProductoContratado(models.Model):
     Representa la relación entre Usuario y Producto con datos específicos de la contratación
     """
     ESTADO_CHOICES = [
-        ('active', 'Active'),
-        ('inactive', 'Inactive'),
-        ('pending', 'Pending'),
+        ('activo', 'Activo'),
+        ('inactivo', 'Inactivo'),
+        ('cancelado', 'Cancelado'),
+        ('pendiente', 'Pendiente'),
     ]
     
     usuario = models.ForeignKey(
@@ -136,16 +143,23 @@ class ProductoContratado(models.Model):
     monto_invertido = models.DecimalField(
         max_digits=12, 
         decimal_places=2,
-        help_text="Monto invertido en euros"
+        help_text="Monto invertido inicial en euros"
+    )
+    capital_actual = models.DecimalField(
+        max_digits=12, 
+        decimal_places=2,
+        default=0,
+        help_text="Capital actual en euros"
     )
     estado = models.CharField(
         max_length=20,
         choices=ESTADO_CHOICES,
-        default='active'
+        default='activo'
     )
     fecha_contratacion = models.DateTimeField(auto_now_add=True)
+    fecha_inicio = models.DateTimeField(default=timezone.now)
+    fecha_fin = models.DateTimeField(null=True, blank=True)
     fecha_actualizacion = models.DateTimeField(auto_now=True)
-    activo = models.BooleanField(default=True)
     
     class Meta:
         verbose_name = 'Producto Contratado'
@@ -174,9 +188,13 @@ class Resultado(models.Model):
         blank=True,
         help_text="Producto específico al que corresponde este resultado"
     )
+    fecha = models.DateField(
+        default=timezone.now,
+        help_text="Fecha del resultado"
+    )
     mes = models.CharField(max_length=20, help_text="Ej: Enero, Febrero, etc.")
     anio = models.IntegerField()
-    capital = models.DecimalField(
+    capital_mes = models.DecimalField(
         max_digits=12, 
         decimal_places=2,
         help_text="Capital en ese mes en euros"
@@ -199,8 +217,8 @@ class Resultado(models.Model):
     class Meta:
         verbose_name = 'Resultado'
         verbose_name_plural = 'Resultados'
-        ordering = ['anio', 'mes']
-        unique_together = ('usuario', 'producto_contratado', 'mes', 'anio')
+        ordering = ['anio', 'fecha']
+        unique_together = ('usuario', 'producto_contratado', 'fecha')
     
     def __str__(self):
         if self.producto_contratado:
@@ -210,7 +228,7 @@ class Resultado(models.Model):
     def calcular_cambios(self, capital_anterior):
         """Calcula el cambio mensual y porcentaje"""
         if capital_anterior and capital_anterior > 0:
-            self.cambio_mensual = self.capital - capital_anterior
+            self.cambio_mensual = self.capital_mes - capital_anterior
             self.porcentaje_cambio = (self.cambio_mensual / capital_anterior) * 100
         else:
             self.cambio_mensual = 0
@@ -228,7 +246,7 @@ class TokenVerificacionEmail(models.Model):
     )
     token = models.CharField(max_length=100, unique=True)
     fecha_creacion = models.DateTimeField(auto_now_add=True)
-    fecha_expiracion = models.DateTimeField()
+    expira_en = models.DateTimeField()
     usado = models.BooleanField(default=False)
     
     class Meta:
@@ -240,7 +258,7 @@ class TokenVerificacionEmail(models.Model):
     
     def esta_expirado(self):
         """Verifica si el token ha expirado"""
-        return timezone.now() > self.fecha_expiracion
+        return timezone.now() > self.expira_en
 
 
 class SesionSeguridad(models.Model):
@@ -254,7 +272,6 @@ class SesionSeguridad(models.Model):
         null=True,
         blank=True
     )
-    email_intento = models.EmailField(help_text="Email usado en el intento de login")
     ip_address = models.GenericIPAddressField()
     user_agent = models.TextField(blank=True, null=True)
     exitoso = models.BooleanField(default=False)
@@ -269,4 +286,5 @@ class SesionSeguridad(models.Model):
     
     def __str__(self):
         estado = "Exitoso" if self.exitoso else "Fallido"
-        return f"{self.email_intento} - {estado} - {self.fecha_intento}"
+        email = self.usuario.email if self.usuario else "Desconocido"
+        return f"{email} - {estado} - {self.fecha_intento}"

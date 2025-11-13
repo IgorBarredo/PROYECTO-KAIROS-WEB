@@ -15,10 +15,10 @@ class UsuarioAdmin(UserAdmin):
     """
     list_display = [
         'email', 'username', 'capital_total', 'email_verificado', 
-        'doble_autenticacion_activa', 'is_active', 'fecha_registro'
+        'tiene_2fa_activo', 'is_active', 'fecha_registro'
     ]
     list_filter = [
-        'email_verificado', 'doble_autenticacion_activa', 
+        'email_verificado', 'tiene_2fa_activo', 
         'is_active', 'is_staff', 'fecha_registro'
     ]
     search_fields = ['email', 'username', 'telefono']
@@ -37,7 +37,7 @@ class UsuarioAdmin(UserAdmin):
         ('Seguridad', {
             'fields': (
                 'email_verificado', 'fecha_verificacion_email',
-                'doble_autenticacion_activa', 'fecha_activacion_2fa'
+                'tiene_2fa_activo', 'fecha_activacion_2fa'
             )
         }),
         ('Permisos', {
@@ -135,7 +135,7 @@ class ProductoAdmin(admin.ModelAdmin):
     
     def cantidad_contrataciones(self, obj):
         """Muestra cuántos usuarios han contratado este producto"""
-        count = obj.contrataciones.filter(activo=True).count()
+        count = obj.contrataciones.filter(estado='activo').count()
         return format_html('<strong>{}</strong> contratación(es)', count)
     cantidad_contrataciones.short_description = 'Contrataciones Activas'
 
@@ -147,24 +147,24 @@ class ProductoContratadoAdmin(admin.ModelAdmin):
     """
     list_display = [
         'usuario', 'producto', 'monto_invertido_formato', 
-        'estado_badge', 'activo', 'fecha_contratacion'
+        'estado_badge', 'fecha_contratacion'
     ]
-    list_filter = ['estado', 'activo', 'fecha_contratacion', 'producto']
+    list_filter = ['estado', 'fecha_contratacion', 'producto']
     search_fields = ['usuario__email', 'usuario__username', 'producto__nombre']
     ordering = ['-fecha_contratacion']
     
     fieldsets = (
         ('Información de Contratación', {
-            'fields': ('usuario', 'producto', 'monto_invertido', 'estado', 'activo')
+            'fields': ('usuario', 'producto', 'monto_invertido', 'capital_actual', 'estado')
         }),
         ('Fechas', {
-            'fields': ('fecha_contratacion', 'fecha_actualizacion')
+            'fields': ('fecha_contratacion', 'fecha_inicio', 'fecha_fin', 'fecha_actualizacion')
         }),
     )
     
     readonly_fields = ['fecha_contratacion', 'fecha_actualizacion']
     
-    actions = ['activar_productos', 'desactivar_productos', 'marcar_como_activo']
+    actions = ['activar_productos', 'cancelar_productos', 'marcar_como_activo']
     
     def monto_invertido_formato(self, obj):
         """Formatea el monto invertido con símbolo de euro"""
@@ -174,9 +174,10 @@ class ProductoContratadoAdmin(admin.ModelAdmin):
     def estado_badge(self, obj):
         """Muestra el estado con colores"""
         colors = {
-            'active': 'green',
-            'inactive': 'red',
-            'pending': 'orange'
+            'activo': 'green',
+            'inactivo': 'red',
+            'pendiente': 'orange',
+            'cancelado': 'gray'
         }
         color = colors.get(obj.estado, 'gray')
         return format_html(
@@ -187,21 +188,21 @@ class ProductoContratadoAdmin(admin.ModelAdmin):
     
     def activar_productos(self, request, queryset):
         """Acción para activar productos contratados"""
-        count = queryset.update(activo=True, estado='active')
+        count = queryset.update(estado='activo')
         self.message_user(request, f'{count} producto(s) activado(s).')
     activar_productos.short_description = "Activar productos seleccionados"
     
-    def desactivar_productos(self, request, queryset):
-        """Acción para desactivar productos contratados"""
-        count = queryset.update(activo=False, estado='inactive')
-        self.message_user(request, f'{count} producto(s) desactivado(s).')
-    desactivar_productos.short_description = "Desactivar productos seleccionados"
+    def cancelar_productos(self, request, queryset):
+        """Acción para cancelar productos contratados"""
+        count = queryset.update(estado='cancelado')
+        self.message_user(request, f'{count} producto(s) cancelado(s).')
+    cancelar_productos.short_description = "Cancelar productos seleccionados"
     
     def marcar_como_activo(self, request, queryset):
         """Acción para marcar estado como activo"""
-        count = queryset.update(estado='active')
+        count = queryset.update(estado='activo')
         self.message_user(request, f'{count} producto(s) marcado(s) como activo.')
-    marcar_como_activo.short_description = "Marcar como Active"
+    marcar_como_activo.short_description = "Marcar como Activo"
 
 
 @admin.register(Resultado)
@@ -222,10 +223,10 @@ class ResultadoAdmin(admin.ModelAdmin):
             'fields': ('usuario', 'producto_contratado')
         }),
         ('Período', {
-            'fields': ('mes', 'anio')
+            'fields': ('fecha', 'mes', 'anio')
         }),
         ('Resultados Financieros', {
-            'fields': ('capital', 'cambio_mensual', 'porcentaje_cambio')
+            'fields': ('capital_mes', 'cambio_mensual', 'porcentaje_cambio')
         }),
         ('Información Adicional', {
             'fields': ('observaciones', 'fecha_registro')
@@ -243,7 +244,7 @@ class ResultadoAdmin(admin.ModelAdmin):
     
     def capital_formato(self, obj):
         """Formatea el capital con símbolo de euro"""
-        return format_html('€ <strong>{:,.2f}</strong>', obj.capital)
+        return format_html('€ <strong>{:,.2f}</strong>', obj.capital_mes)
     capital_formato.short_description = 'Capital'
     
     def cambio_formato(self, obj):
@@ -272,8 +273,8 @@ class TokenVerificacionEmailAdmin(admin.ModelAdmin):
     """
     Administración para tokens de verificación de email
     """
-    list_display = ['usuario', 'token_corto', 'fecha_creacion', 'fecha_expiracion', 'usado', 'estado_token']
-    list_filter = ['usado', 'fecha_creacion', 'fecha_expiracion']
+    list_display = ['usuario', 'token_corto', 'fecha_creacion', 'expira_en', 'usado', 'estado_token']
+    list_filter = ['usado', 'fecha_creacion', 'expira_en']
     search_fields = ['usuario__email', 'token']
     ordering = ['-fecha_creacion']
     readonly_fields = ['fecha_creacion']
@@ -300,17 +301,17 @@ class SesionSeguridadAdmin(admin.ModelAdmin):
     Administración para sesiones de seguridad
     """
     list_display = [
-        'email_intento', 'usuario', 'ip_address', 
+        'usuario_email', 'usuario', 'ip_address', 
         'estado_badge', 'requirio_2fa', 'fecha_intento'
     ]
     list_filter = ['exitoso', 'requirio_2fa', 'fecha_intento']
-    search_fields = ['email_intento', 'usuario__email', 'ip_address']
+    search_fields = ['usuario__email', 'ip_address']
     ordering = ['-fecha_intento']
     readonly_fields = ['fecha_intento']
     
     fieldsets = (
         ('Información del Intento', {
-            'fields': ('usuario', 'email_intento', 'exitoso', 'motivo_fallo')
+            'fields': ('usuario', 'exitoso', 'motivo_fallo')
         }),
         ('Seguridad', {
             'fields': ('requirio_2fa', 'ip_address', 'user_agent')
@@ -319,6 +320,11 @@ class SesionSeguridadAdmin(admin.ModelAdmin):
             'fields': ('fecha_intento',)
         }),
     )
+    
+    def usuario_email(self, obj):
+        """Muestra el email del usuario"""
+        return obj.usuario.email if obj.usuario else 'Desconocido'
+    usuario_email.short_description = 'Email'
     
     def estado_badge(self, obj):
         """Muestra el estado del intento con colores"""

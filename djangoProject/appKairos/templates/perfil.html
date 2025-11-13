@@ -1,0 +1,181 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Profile - Proyecto Kairos</title>
+  <link rel="stylesheet" href="{% static 'css/perfil.css' %}">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <!-- Header -->
+  <header>
+    <div class="logo">P.K. Proyecto Kairos</div>
+    <nav>
+      <a href="{% url 'appKairos:dashboard' %}" class="linked">Dashboard</a>
+      <a href="{% url 'appKairos:perfil' %}" class="linked active">Profile</a>
+      <a href="{% url 'appKairos:logout' %}" class="auth-btn logout-btn">Logout</a>
+    </nav>
+  </header>
+
+  <!-- Main Content -->
+  <main class="perfil-main">
+    
+    <div class="perfil-container">
+      
+      <h1>My Profile</h1>
+      
+      <div class="perfil-grid">
+        
+        <!-- Profile Information -->
+        <section class="perfil-section">
+          <div class="section-header">
+            <h2>Personal Information</h2>
+            <span class="section-icon">👤</span>
+          </div>
+          
+          <form method="POST" class="perfil-form">
+            {% csrf_token %}
+            
+            <div class="form-group">
+              <label for="email">Email</label>
+              <input type="email" id="email" value="{{ user.email }}" disabled>
+              <span class="help-text">Email cannot be changed</span>
+            </div>
+
+            <div class="form-group">
+              <label for="username">Username</label>
+              <input type="text" id="username" value="{{ user.username }}" disabled>
+            </div>
+            
+            <div class="form-row">
+              <div class="form-group">
+                <label for="first_name">First Name</label>
+                <input type="text" id="first_name" name="first_name" value="{{ form.first_name.value|default:user.first_name }}" placeholder="First Name">
+                {% if form.first_name.errors %}
+                  <span class="error-message">{{ form.first_name.errors.0 }}</span>
+                {% endif %}
+              </div>
+              
+              <div class="form-group">
+                <label for="last_name">Last Name</label>
+                <input type="text" id="last_name" name="last_name" value="{{ form.last_name.value|default:user.last_name }}" placeholder="Last Name">
+                {% if form.last_name.errors %}
+                  <span class="error-message">{{ form.last_name.errors.0 }}</span>
+                {% endif %}
+              </div>
+            </div>
+            
+            <div class="form-group">
+              <label for="telefono">Phone</label>
+              <input type="text" id="telefono" name="telefono" value="{{ form.telefono.value|default:user.telefono }}" placeholder="+34 600 000 000">
+              {% if form.telefono.errors %}
+                <span class="error-message">{{ form.telefono.errors.0 }}</span>
+              {% endif %}
+            </div>
+            
+            <button type="submit" class="btn-primary">Save Changes</button>
+          </form>
+        </section>
+
+        <!-- Security Settings -->
+        <section class="perfil-section">
+          <div class="section-header">
+            <h2>Security</h2>
+            <span class="section-icon">🔒</span>
+          </div>
+          
+          <div class="security-info">
+            
+            <div class="security-item">
+              <div class="security-item-content">
+                <h3>Password</h3>
+                <p>Last changed: {{ user.last_login|date:"F d, Y" }}</p>
+              </div>
+              <a href="{% url 'appKairos:cambiar_password' %}" class="btn-secondary">Change Password</a>
+            </div>
+
+            <div class="security-item">
+              <div class="security-item-content">
+                <h3>Two-Factor Authentication</h3>
+                {% if user.tiene_2fa_activo %}
+                  <p class="status-active">✓ Active</p>
+                  <p class="status-date">Activated on {{ user.fecha_activacion_2fa|date:"F d, Y" }}</p>
+                {% else %}
+                  <p class="status-inactive">Not activated</p>
+                  <p>Add an extra layer of security to your account</p>
+                {% endif %}
+              </div>
+              {% if user.tiene_2fa_activo %}
+                <form method="POST" action="{% url 'appKairos:desactivar_2fa' %}" onsubmit="return confirm('Are you sure you want to disable 2FA?');">
+                  {% csrf_token %}
+                  <button type="submit" class="btn-danger">Disable 2FA</button>
+                </form>
+              {% else %}
+                <a href="{% url 'appKairos:activar_2fa' %}" class="btn-secondary">Activate 2FA</a>
+              {% endif %}
+            </div>
+
+            <div class="security-item">
+              <div class="security-item-content">
+                <h3>Email Verification</h3>
+                {% if user.email_verificado %}
+                  <p class="status-active">✓ Verified</p>
+                  <p class="status-date">Verified on {{ user.fecha_verificacion_email|date:"F d, Y" }}</p>
+                {% else %}
+                  <p class="status-inactive">Not verified</p>
+                  <p>Please verify your email address</p>
+                {% endif %}
+              </div>
+            </div>
+
+          </div>
+        </section>
+
+        <!-- Account Information -->
+        <section class="perfil-section">
+          <div class="section-header">
+            <h2>Account Information</h2>
+            <span class="section-icon">📊</span>
+          </div>
+          
+          <div class="account-stats">
+            
+            <div class="stat-card">
+              <div class="stat-label">Total Capital</div>
+              <div class="stat-value">€ {{ user.capital_total|floatformat:2 }}</div>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-label">Active Products</div>
+              <div class="stat-value">{{ user.productos_contratados.count }}</div>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-label">Member Since</div>
+              <div class="stat-value">{{ user.fecha_registro|date:"M Y" }}</div>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-label">Last Login</div>
+              <div class="stat-value">{{ user.last_login|date:"M d, Y" }}</div>
+            </div>
+
+          </div>
+        </section>
+
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- Footer -->
+  <footer>
+    <p>© 2025 P.K. Proyecto Kairos. All rights reserved.</p>
+  </footer>
+
+</body>
+</html>

@@ -1,0 +1,73 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Two-Factor Authentication - Proyecto Kairos</title>
+  <link rel="stylesheet" href="{% static 'css/auth2fa.css' %}">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  
+  <div class="auth-container">
+    <div class="auth-box verify-2fa-box">
+      
+      <div class="icon-2fa">🔐</div>
+      
+      <h1>Two-Factor Authentication</h1>
+      <p class="subtitle">Enter the code from your authenticator app</p>
+      
+      <form method="POST" class="auth-form">
+        {% csrf_token %}
+        
+        <div class="form-group">
+          <label for="codigo_2fa">6-Digit Code</label>
+          <input 
+            type="text" 
+            id="codigo_2fa" 
+            name="codigo_2fa"
+            maxlength="6" 
+            pattern="[0-9]{6}"
+            inputmode="numeric"
+            placeholder="000000"
+            required
+            autofocus
+            class="code-input"
+          >
+          {% if form.codigo_2fa.errors %}
+            <span class="error-message">{{ form.codigo_2fa.errors.0 }}</span>
+          {% endif %}
+        </div>
+        
+        <button type="submit" class="auth-btn">Verify & Login</button>
+      </form>
+      
+      <div class="help-text">
+        <p>Open your Google Authenticator app and enter the 6-digit code for Proyecto Kairos.</p>
+      </div>
+
+      <a href="{% url 'appKairos:login' %}" class="back-home">← Back to Login</a>
+      
+    </div>
+  </div>
+
+  <script>
+    // Auto-submit cuando se ingresan 6 dígitos
+    document.getElementById('codigo_2fa').addEventListener('input', function(e) {
+      // Solo permitir números
+      this.value = this.value.replace(/[^0-9]/g, '');
+      
+      if (this.value.length === 6) {
+        this.form.submit();
+      }
+    });
+
+    // Focus automático en el input
+    window.addEventListener('load', function() {
+      document.getElementById('codigo_2fa').focus();
+    });
+  </script>
+
+</body>
+</html>

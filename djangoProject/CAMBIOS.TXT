@@ -1,0 +1,140 @@
+🔧 Pasos para Aplicar los Cambios
+
+1. Crear Migraciones
+Después de los cambios en los modelos, debes crear nuevas migraciones:
+
+cd /workspace/uploads/djangoProject
+python manage.py makemigrations
+2. Aplicar Migraciones
+python manage.py migrate
+3. Crear Superusuario (si no existe)
+python manage.py createsuperuser
+4. Recolectar Archivos Estáticos (para producción)
+python manage.py collectstatic
+5. Ejecutar el Servidor
+python manage.py runserver
+📋 Recomendaciones Adicionales
+1. Seguridad
+⚠️ URGENTE: Cambiar SECRET_KEY en producción
+⚠️ URGENTE: Configurar ALLOWED_HOSTS para producción
+Configurar HTTPS en producción (ya está preparado en settings)
+Considerar usar variables de entorno para configuraciones sensibles
+2. Base de Datos
+Para producción, migrar de SQLite a PostgreSQL
+Configurar backups automáticos de la base de datos
+Agregar índices a campos frecuentemente consultados
+3. Email
+Configurar un servidor SMTP real para producción
+Considerar usar servicios como SendGrid, Mailgun o AWS SES
+Implementar plantillas HTML para emails más profesionales
+4. Archivos Estáticos y Media
+Para producción, usar un CDN o servicio como AWS S3
+Configurar compresión de archivos estáticos
+Optimizar imágenes antes de subirlas
+5. Testing
+Crear tests unitarios para modelos
+Crear tests de integración para views
+Implementar tests de seguridad
+6. Logging
+Configurar logging adecuado para producción
+Implementar monitoreo de errores (Sentry, etc.)
+7. Performance
+Implementar caché (Redis/Memcached)
+Optimizar queries con select_related y prefetch_related
+Considerar usar Celery para tareas asíncronas
+8. Documentación
+Documentar APIs si las hay
+Crear guía de usuario
+Documentar proceso de deployment
+🗂️ Estructura de Carpetas Recomendada
+djangoProject/
+├── appKairos/
+│   ├── management/
+│   │   └── commands/          # Comandos personalizados
+│   ├── migrations/
+│   ├── static/
+│   │   ├── css/
+│   │   ├── js/                # Agregar carpeta para JavaScript
+│   │   └── img/
+│   ├── templates/
+│   ├── tests/                 # Agregar carpeta para tests
+│   │   ├── test_models.py
+│   │   ├── test_views.py
+│   │   └── test_forms.py
+│   ├── admin.py
+│   ├── apps.py
+│   ├── backends.py
+│   ├── forms.py
+│   ├── models.py
+│   ├── urls.py
+│   └── views.py
+├── djangoProject/
+│   ├── settings/              # Separar settings por entorno
+│   │   ├── base.py
+│   │   ├── development.py
+│   │   └── production.py
+│   ├── urls.py
+│   └── wsgi.py
+├── media/                     # Crear esta carpeta
+├── staticfiles/               # Se genera con collectstatic
+├── .env                       # Variables de entorno (no subir a git)
+├── .gitignore
+├── manage.py
+├── README.md
+└── requirements.txt
+🚀 Checklist para Producción
+[ ] Cambiar SECRET_KEY
+[ ] Configurar ALLOWED_HOSTS
+[ ] DEBUG = False
+[ ] Configurar base de datos PostgreSQL
+[ ] Configurar servidor SMTP
+[ ] Configurar archivos estáticos con CDN/S3
+[ ] Configurar HTTPS
+[ ] Implementar logging
+[ ] Configurar backups
+[ ] Implementar monitoreo
+[ ] Realizar pruebas de seguridad
+[ ] Documentar proceso de deployment
+📝 Notas Importantes
+Migraciones: Después de aplicar los cambios en models.py, DEBES crear y aplicar migraciones.
+
+Datos Existentes: Si ya tienes datos en la base de datos, las migraciones pueden requerir valores por defecto para los nuevos campos.
+
+2FA: Los usuarios existentes necesitarán reactivar 2FA si ya lo tenían configurado.
+
+Testing: Prueba todas las funcionalidades después de aplicar los cambios:
+
+Registro de usuario
+Verificación de email
+Login con y sin 2FA
+Dashboard
+Contratación de productos
+Perfil de usuario
+Backup: Haz un backup de tu base de datos antes de aplicar las migraciones.
+
+🐛 Problemas Conocidos y Soluciones
+Problema: Error al hacer migraciones
+Solución:
+
+python manage.py makemigrations --empty appKairos
+# Editar la migración manualmente si es necesario
+python manage.py migrate
+Problema: Archivos estáticos no se cargan
+Solución:
+
+Verificar que DEBUG = True en desarrollo
+Verificar que los archivos existen en appKairos/static/
+Ejecutar python manage.py collectstatic para producción
+Problema: Error con 2FA
+Solución:
+
+Verificar que pyotp y qrcode están instalados
+Verificar que el campo secreto_2fa existe en la base de datos
+Regenerar el secreto 2FA para el usuario
+📞 Contacto y Soporte
+Para cualquier duda o problema, revisar:
+
+Documentación oficial de Django: https://docs.djangoproject.com/
+Logs del servidor: python manage.py runserver muestra errores en consola
+Django Debug Toolbar (ya incluido en requirements.txt)
+Fecha de última actualización: 2025-11-12 Versión de Django: 4.2.26

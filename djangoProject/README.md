@@ -41,6 +41,10 @@ source venv/bin/activate  # En Windows: venv\Scripts\activate
 
 ### 3. Instalar dependencias
 
+pip install -r requirements.TXT
+
+### o en su defecto:
+
 ```bash
 pip install django==4.2.26
 pip install pillow
@@ -252,7 +256,7 @@ gunicorn djangoProject.wsgi:application --bind 0.0.0.0:8000
 ## 👤 Autor
 
 **Igor Barredo Arroyo**  
-Proyecto Kairos - Investigación de vulnerabilidades de mercado
+Proyecto Kairos - Gestión de Capital 
 
 ## 📄 Licencia
 
