@@ -20,12 +20,13 @@ import os
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-*)#y3o3&69hg)-eg(xqf_e7rxigl697qzc5+ui#g40u4%g!g8*'
+# TODO: Move to environment variables in production
+SECRET_KEY = 'django-insecure-CHANGE-ME-IN-PRODUCTION'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['localhost', '127.0.0.1']
 
 # Application definition
 INSTALLED_APPS = [
@@ -36,8 +37,6 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'appKairos',
-    'django_otp',  # Para 2FA
-    'django_otp.plugins.otp_totp',  # Para Google Authenticator
 ]
 
 MIDDLEWARE = [
@@ -46,7 +45,6 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django_otp.middleware.OTPMiddleware',  # Para 2FA - descomentar si instalas django-otp
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
@@ -95,6 +93,46 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+# Crear carpeta de logs si no existe
+LOGS_DIR = BASE_DIR / 'logs'
+LOGS_DIR.mkdir(exist_ok=True)
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '{levelname} {asctime} {module} {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'file': {
+            'level': 'ERROR',
+            'class': 'logging.FileHandler',
+            'filename': LOGS_DIR / 'django.log',
+            'formatter': 'verbose',
+        },
+        'console': {
+            'level': 'INFO',
+            'class': 'logging.StreamHandler',
+            'formatter': 'verbose',
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['file', 'console'],
+            'level': 'INFO',
+            'propagate': True,
+        },
+        'appKairos': {
+            'handlers': ['file', 'console'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+    },
+}
+
 # Internationalization
 LANGUAGE_CODE = 'en-us'
 TIME_ZONE = 'Europe/Madrid'
@@ -134,7 +172,7 @@ EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 DEFAULT_FROM_EMAIL = 'noreply@proyectokairos.com'
 CONTACT_EMAIL = 'contact@proyectokairos.com'
 
-# Para producción, usa SMTP:
+# Para producción, configura SMTP:
 # EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 # EMAIL_HOST = 'smtp.gmail.com'
 # EMAIL_PORT = 587
@@ -145,7 +183,7 @@ CONTACT_EMAIL = 'contact@proyectokairos.com'
 # Configuración de sesiones
 SESSION_COOKIE_AGE = 1209600  # 2 semanas
 SESSION_COOKIE_HTTPONLY = True
-SESSION_COOKIE_SECURE = False  # True en producción con HTTPS
+SESSION_COOKIE_SECURE = not DEBUG  # True en producción con HTTPS
 
 # Configuración de mensajes
 from django.contrib.messages import constants as messages
@@ -165,3 +203,6 @@ if not DEBUG:
     SECURE_BROWSER_XSS_FILTER = True
     SECURE_CONTENT_TYPE_NOSNIFF = True
     X_FRAME_OPTIONS = 'DENY'
+    SECURE_HSTS_SECONDS = 31536000
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True

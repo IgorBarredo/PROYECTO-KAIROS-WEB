@@ -1,0 +1,160 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Códigos de Respaldo 2FA - Proyecto Kairos{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/auth2fa.css' %}">
+<style>
+.backup-codes-container {
+    max-width: 700px;
+    margin: 50px auto;
+    padding: 30px;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.warning-box {
+    background-color: #fff3cd;
+    border-left: 4px solid #ffc107;
+    padding: 20px;
+    margin-bottom: 30px;
+    border-radius: 4px;
+}
+
+.warning-box h3 {
+    color: #856404;
+    margin-top: 0;
+}
+
+.codes-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+    margin: 30px 0;
+}
+
+.code-item {
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 8px;
+    font-family: 'Courier New', monospace;
+    font-size: 18px;
+    font-weight: bold;
+    text-align: center;
+    letter-spacing: 2px;
+    border: 2px solid #dee2e6;
+}
+
+.instructions {
+    background-color: #e7f3ff;
+    border-left: 4px solid #007bff;
+    padding: 20px;
+    margin: 20px 0;
+    border-radius: 4px;
+}
+
+.instructions h4 {
+    margin-top: 0;
+    color: #004085;
+}
+
+.instructions ul {
+    margin: 10px 0;
+    padding-left: 20px;
+}
+
+.instructions li {
+    margin: 8px 0;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 15px;
+    margin-top: 30px;
+}
+
+.btn-print {
+    background-color: #6c757d;
+    color: white;
+}
+
+.btn-print:hover {
+    background-color: #5a6268;
+}
+
+@media print {
+    .action-buttons, .warning-box, .instructions {
+        display: none;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="backup-codes-container">
+    <h2>Códigos de Respaldo 2FA</h2>
+    
+    <div class="warning-box">
+        <h3>⚠️ ¡IMPORTANTE!</h3>
+        <p>Estos códigos de respaldo te permitirán acceder a tu cuenta si pierdes acceso a tu aplicación de autenticación.</p>
+        <p><strong>Guárdalos en un lugar seguro. No podrás verlos nuevamente.</strong></p>
+    </div>
+
+    <div class="codes-grid">
+        {% for codigo in codigos %}
+            <div class="code-item">{{ codigo }}</div>
+        {% endfor %}
+    </div>
+
+    <div class="instructions">
+        <h4>Instrucciones de Uso:</h4>
+        <ul>
+            <li>Cada código de respaldo solo puede usarse una vez</li>
+            <li>Guárdalos en un lugar seguro (no en tu teléfono)</li>
+            <li>Puedes imprimirlos o guardarlos en un gestor de contraseñas</li>
+            <li>Si usas todos los códigos, puedes generar nuevos desde tu perfil</li>
+            <li>Usa estos códigos cuando no tengas acceso a tu aplicación de autenticación</li>
+        </ul>
+    </div>
+
+    <div class="action-buttons">
+        <button onclick="window.print()" class="btn btn-print">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16" style="margin-right: 5px;">
+                <path d="M5 1a2 2 0 0 0-2 2v1h10V3a2 2 0 0 0-2-2H5zm6 8H5a1 1 0 0 0-1 1v3a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1v-3a1 1 0 0 0-1-1z"/>
+                <path d="M0 7a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2h-1v-2a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v2H2a2 2 0 0 1-2-2V7zm2.5 1a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1z"/>
+            </svg>
+            Imprimir Códigos
+        </button>
+        
+        <button onclick="copiarCodigos()" class="btn btn-secondary">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16" style="margin-right: 5px;">
+                <path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1v-1z"/>
+                <path d="M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5h3zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3z"/>
+            </svg>
+            Copiar al Portapapeles
+        </button>
+        
+        <form method="post" style="flex: 1;">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-primary" style="width: 100%;">
+                He Guardado los Códigos - Continuar
+            </button>
+        </form>
+    </div>
+</div>
+
+<script>
+function copiarCodigos() {
+    const codigos = [{% for codigo in codigos %}'{{ codigo }}'{% if not forloop.last %}, {% endif %}{% endfor %}];
+    const texto = 'Códigos de Respaldo 2FA - Proyecto Kairos\n\n' + codigos.join('\n');
+    
+    navigator.clipboard.writeText(texto).then(function() {
+        alert('Códigos copiados al portapapeles');
+    }, function(err) {
+        console.error('Error al copiar: ', err);
+    });
+}
+</script>
+{% endblock %}

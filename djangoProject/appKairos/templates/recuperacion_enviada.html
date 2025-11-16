@@ -1,0 +1,78 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Email Enviado - Proyecto Kairos{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/auth.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="auth-card">
+        <div class="auth-header">
+            <div class="success-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                    <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                </svg>
+            </div>
+            <h2>Email Enviado</h2>
+            <p>Si el email existe en nuestro sistema, recibirás un enlace de recuperación en unos momentos.</p>
+        </div>
+
+        <div class="info-box">
+            <h4>Instrucciones:</h4>
+            <ol>
+                <li>Revisa tu bandeja de entrada</li>
+                <li>Haz clic en el enlace de recuperación</li>
+                <li>Crea una nueva contraseña segura</li>
+            </ol>
+            <p class="text-muted">
+                <strong>Nota:</strong> El enlace expirará en 1 hora por razones de seguridad.
+            </p>
+        </div>
+
+        <div class="auth-footer">
+            <p>¿No recibiste el email? <a href="{% url 'appKairos:solicitar_recuperacion' %}">Reenviar</a></p>
+            <p><a href="{% url 'appKairos:login' %}">Volver al inicio de sesión</a></p>
+        </div>
+    </div>
+</div>
+
+<style>
+.success-icon {
+    text-align: center;
+    color: #28a745;
+    margin-bottom: 20px;
+}
+
+.info-box {
+    background-color: #f8f9fa;
+    border-left: 4px solid #007bff;
+    padding: 20px;
+    margin: 20px 0;
+    border-radius: 4px;
+}
+
+.info-box h4 {
+    margin-top: 0;
+    color: #333;
+}
+
+.info-box ol {
+    margin: 15px 0;
+    padding-left: 20px;
+}
+
+.info-box li {
+    margin: 8px 0;
+}
+
+.text-muted {
+    color: #6c757d;
+    font-size: 0.9em;
+    margin-top: 15px;
+}
+</style>
+{% endblock %}

@@ -1,0 +1,155 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Desactivar 2FA - Proyecto Kairos{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/auth2fa.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="auth-card">
+        <div class="auth-header">
+            <h2>Desactivar Autenticación de Dos Factores</h2>
+            <p>Confirma tu identidad para desactivar 2FA</p>
+        </div>
+
+        {% if messages %}
+            <div class="messages">
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <div class="warning-box">
+            <h3>⚠️ Advertencia de Seguridad</h3>
+            <p>Desactivar la autenticación de dos factores hará que tu cuenta sea menos segura.</p>
+            <p>Solo podrás acceder con tu contraseña, sin la capa adicional de protección.</p>
+        </div>
+
+        <form method="post" class="auth-form">
+            {% csrf_token %}
+            
+            <div class="form-group">
+                <label for="{{ form.password.id_for_label }}">{{ form.password.label }}</label>
+                {{ form.password }}
+                {% if form.password.errors %}
+                    <div class="error-message">
+                        {{ form.password.errors }}
+                    </div>
+                {% endif %}
+                {% if form.password.help_text %}
+                    <small class="form-text">{{ form.password.help_text }}</small>
+                {% endif %}
+            </div>
+
+            <div class="action-buttons">
+                <a href="{% url 'appKairos:dashboard' %}" class="btn btn-secondary">
+                    Cancelar
+                </a>
+                <button type="submit" class="btn btn-danger">
+                    Confirmar Desactivación
+                </button>
+            </div>
+        </form>
+
+        <div class="info-box">
+            <h4>¿Qué sucederá al desactivar 2FA?</h4>
+            <ul>
+                <li>Se eliminará tu secreto 2FA actual</li>
+                <li>Se eliminarán todos tus códigos de respaldo</li>
+                <li>Solo necesitarás tu contraseña para iniciar sesión</li>
+                <li>Podrás reactivar 2FA en cualquier momento desde tu perfil</li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<style>
+.warning-box {
+    background-color: #f8d7da;
+    border-left: 4px solid #dc3545;
+    padding: 20px;
+    margin-bottom: 25px;
+    border-radius: 4px;
+}
+
+.warning-box h3 {
+    color: #721c24;
+    margin-top: 0;
+    font-size: 1.1em;
+}
+
+.warning-box p {
+    color: #721c24;
+    margin: 10px 0;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 15px;
+    margin-top: 25px;
+}
+
+.action-buttons .btn {
+    flex: 1;
+}
+
+.btn-danger {
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s;
+}
+
+.btn-danger:hover {
+    background-color: #c82333;
+}
+
+.btn-secondary {
+    background-color: #6c757d;
+    color: white;
+    text-decoration: none;
+    display: inline-block;
+    text-align: center;
+    padding: 12px 24px;
+    border-radius: 4px;
+    transition: background-color 0.3s;
+}
+
+.btn-secondary:hover {
+    background-color: #5a6268;
+}
+
+.info-box {
+    background-color: #e7f3ff;
+    border-left: 4px solid #007bff;
+    padding: 20px;
+    margin-top: 25px;
+    border-radius: 4px;
+}
+
+.info-box h4 {
+    margin-top: 0;
+    color: #004085;
+}
+
+.info-box ul {
+    margin: 10px 0;
+    padding-left: 20px;
+}
+
+.info-box li {
+    margin: 8px 0;
+    color: #004085;
+}
+</style>
+{% endblock %}

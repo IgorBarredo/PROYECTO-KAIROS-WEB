@@ -6,12 +6,16 @@ Usuario = get_user_model()
 
 class EmailBackend(ModelBackend):
     """
-    Backend de autenticación personalizado que permite login con email
+    Backend de autenticación personalizado que permite login con email o username
     """
     def authenticate(self, request, username=None, password=None, **kwargs):
         try:
-            # Buscar usuario por email
-            user = Usuario.objects.get(email=username)
+            # Intentar buscar por email primero
+            try:
+                user = Usuario.objects.get(email=username)
+            except Usuario.DoesNotExist:
+                # Si no existe por email, intentar por username
+                user = Usuario.objects.get(username=username)
         except Usuario.DoesNotExist:
             return None
         

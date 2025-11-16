@@ -1,73 +1,161 @@
+{% extends 'base.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Two-Factor Authentication - Proyecto Kairos</title>
-  <link rel="stylesheet" href="{% static 'css/auth2fa.css' %}">
-  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;500;700&display=swap" rel="stylesheet">
-</head>
-<body>
-  
-  <div class="auth-container">
-    <div class="auth-box verify-2fa-box">
-      
-      <div class="icon-2fa">🔐</div>
-      
-      <h1>Two-Factor Authentication</h1>
-      <p class="subtitle">Enter the code from your authenticator app</p>
-      
-      <form method="POST" class="auth-form">
-        {% csrf_token %}
-        
-        <div class="form-group">
-          <label for="codigo_2fa">6-Digit Code</label>
-          <input 
-            type="text" 
-            id="codigo_2fa" 
-            name="codigo_2fa"
-            maxlength="6" 
-            pattern="[0-9]{6}"
-            inputmode="numeric"
-            placeholder="000000"
-            required
-            autofocus
-            class="code-input"
-          >
-          {% if form.codigo_2fa.errors %}
-            <span class="error-message">{{ form.codigo_2fa.errors.0 }}</span>
-          {% endif %}
+
+{% block title %}Verificación 2FA - Proyecto Kairos{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/auth2fa.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="auth-card">
+        <div class="auth-header">
+            <h2>Verificación de Dos Factores</h2>
+            <p>Ingresa el código de 6 dígitos de tu aplicación de autenticación</p>
         </div>
-        
-        <button type="submit" class="auth-btn">Verify & Login</button>
-      </form>
-      
-      <div class="help-text">
-        <p>Open your Google Authenticator app and enter the 6-digit code for Proyecto Kairos.</p>
-      </div>
 
-      <a href="{% url 'appKairos:login' %}" class="back-home">← Back to Login</a>
-      
+        {% if messages %}
+            <div class="messages">
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <div class="attempts-warning">
+            <p>Intentos restantes: <strong>{{ intentos_restantes }}</strong></p>
+        </div>
+
+        <form method="post" class="auth-form">
+            {% csrf_token %}
+            
+            <div class="form-group">
+                <label for="{{ form.codigo_2fa.id_for_label }}">{{ form.codigo_2fa.label }}</label>
+                {{ form.codigo_2fa }}
+                {% if form.codigo_2fa.errors %}
+                    <div class="error-message">
+                        {{ form.codigo_2fa.errors }}
+                    </div>
+                {% endif %}
+                {% if form.codigo_2fa.help_text %}
+                    <small class="form-text">{{ form.codigo_2fa.help_text }}</small>
+                {% endif %}
+            </div>
+
+            <div class="separator">
+                <span>O</span>
+            </div>
+
+            <div class="form-group">
+                <label for="{{ form.codigo_respaldo.id_for_label }}">{{ form.codigo_respaldo.label }}</label>
+                {{ form.codigo_respaldo }}
+                {% if form.codigo_respaldo.errors %}
+                    <div class="error-message">
+                        {{ form.codigo_respaldo.errors }}
+                    </div>
+                {% endif %}
+                {% if form.codigo_respaldo.help_text %}
+                    <small class="form-text">{{ form.codigo_respaldo.help_text }}</small>
+                {% endif %}
+            </div>
+
+            {% if form.non_field_errors %}
+                <div class="error-message">
+                    {{ form.non_field_errors }}
+                </div>
+            {% endif %}
+
+            <button type="submit" class="btn btn-primary btn-block">
+                Verificar
+            </button>
+        </form>
+
+        <div class="info-box">
+            <h4>¿Problemas para acceder?</h4>
+            <ul>
+                <li>Asegúrate de que la hora de tu dispositivo esté sincronizada</li>
+                <li>Si perdiste acceso a tu aplicación, usa un código de respaldo</li>
+                <li>Los códigos de respaldo se proporcionaron al activar 2FA</li>
+            </ul>
+        </div>
+
+        <div class="auth-footer">
+            <p><a href="{% url 'appKairos:login' %}">Cancelar e iniciar sesión nuevamente</a></p>
+        </div>
     </div>
-  </div>
+</div>
 
-  <script>
-    // Auto-submit cuando se ingresan 6 dígitos
-    document.getElementById('codigo_2fa').addEventListener('input', function(e) {
-      // Solo permitir números
-      this.value = this.value.replace(/[^0-9]/g, '');
-      
-      if (this.value.length === 6) {
-        this.form.submit();
-      }
-    });
+<style>
+.attempts-warning {
+    background-color: #fff3cd;
+    border-left: 4px solid #ffc107;
+    padding: 15px;
+    margin-bottom: 20px;
+    border-radius: 4px;
+}
 
-    // Focus automático en el input
-    window.addEventListener('load', function() {
-      document.getElementById('codigo_2fa').focus();
-    });
-  </script>
+.attempts-warning p {
+    margin: 0;
+    color: #856404;
+}
 
-</body>
-</html>
+.separator {
+    text-align: center;
+    margin: 20px 0;
+    position: relative;
+}
+
+.separator::before,
+.separator::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    width: 45%;
+    height: 1px;
+    background-color: #dee2e6;
+}
+
+.separator::before {
+    left: 0;
+}
+
+.separator::after {
+    right: 0;
+}
+
+.separator span {
+    background-color: white;
+    padding: 0 15px;
+    color: #6c757d;
+    font-weight: 500;
+}
+
+.info-box {
+    background-color: #e7f3ff;
+    border-left: 4px solid #007bff;
+    padding: 15px;
+    margin-top: 20px;
+    border-radius: 4px;
+}
+
+.info-box h4 {
+    margin-top: 0;
+    color: #004085;
+    font-size: 1em;
+}
+
+.info-box ul {
+    margin: 10px 0 0 0;
+    padding-left: 20px;
+}
+
+.info-box li {
+    margin: 5px 0;
+    font-size: 0.9em;
+    color: #004085;
+}
+</style>
+{% endblock %}

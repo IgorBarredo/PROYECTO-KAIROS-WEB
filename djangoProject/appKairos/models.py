@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.utils import timezone
 from decimal import Decimal
+import secrets
 
 
 class Usuario(AbstractUser):
@@ -12,6 +13,7 @@ class Usuario(AbstractUser):
     # Sobrescribir email para hacerlo único y obligatorio
     email = models.EmailField(
         unique=True,
+        db_index=True,
         verbose_name='Email',
         help_text='Email del usuario (usado para login)'
     )
@@ -53,6 +55,11 @@ class Usuario(AbstractUser):
         blank=True,
         help_text="Fecha en que se activó 2FA"
     )
+    codigos_respaldo_2fa = models.TextField(
+        blank=True,
+        null=True,
+        help_text="Códigos de respaldo encriptados para 2FA (separados por comas)"
+    )
     
     # Hacer que el email sea el campo de login
     USERNAME_FIELD = 'email'
@@ -73,6 +80,11 @@ class Usuario(AbstractUser):
         self.capital_total = total
         self.save()
         return total
+
+    @staticmethod
+    def generar_codigos_respaldo():
+        """Genera 10 códigos de respaldo de 8 caracteres"""
+        return [secrets.token_hex(4).upper() for _ in range(10)]
 
 
 class Mercado(models.Model):
@@ -165,6 +177,10 @@ class ProductoContratado(models.Model):
         verbose_name = 'Producto Contratado'
         verbose_name_plural = 'Productos Contratados'
         unique_together = ('usuario', 'producto')
+        indexes = [
+            models.Index(fields=['usuario', 'estado']),
+            models.Index(fields=['fecha_contratacion']),
+        ]
     
     def __str__(self):
         return f"{self.usuario.email} - {self.producto.nombre} (€{self.monto_invertido})"
@@ -261,6 +277,32 @@ class TokenVerificacionEmail(models.Model):
         return timezone.now() > self.expira_en
 
 
+class TokenRecuperacionPassword(models.Model):
+    """
+    Modelo para tokens de recuperación de contraseña
+    """
+    usuario = models.ForeignKey(
+        Usuario,
+        on_delete=models.CASCADE,
+        related_name='tokens_recuperacion'
+    )
+    token = models.CharField(max_length=100, unique=True)
+    fecha_creacion = models.DateTimeField(auto_now_add=True)
+    expira_en = models.DateTimeField()
+    usado = models.BooleanField(default=False)
+    
+    class Meta:
+        verbose_name = 'Token de Recuperación de Contraseña'
+        verbose_name_plural = 'Tokens de Recuperación de Contraseña'
+    
+    def __str__(self):
+        return f"Token de recuperación para {self.usuario.email}"
+    
+    def esta_expirado(self):
+        """Verifica si el token ha expirado"""
+        return timezone.now() > self.expira_en
+
+
 class SesionSeguridad(models.Model):
     """
     Modelo para registrar intentos de login y actividad de seguridad
@@ -276,13 +318,16 @@ class SesionSeguridad(models.Model):
     user_agent = models.TextField(blank=True, null=True)
     exitoso = models.BooleanField(default=False)
     requirio_2fa = models.BooleanField(default=False)
-    fecha_intento = models.DateTimeField(auto_now_add=True)
+    fecha_intento = models.DateTimeField(auto_now_add=True, db_index=True)
     motivo_fallo = models.CharField(max_length=200, blank=True, null=True)
     
     class Meta:
         verbose_name = 'Sesión de Seguridad'
         verbose_name_plural = 'Sesiones de Seguridad'
         ordering = ['-fecha_intento']
+        indexes = [
+            models.Index(fields=['-fecha_intento']),
+        ]
     
     def __str__(self):
         estado = "Exitoso" if self.exitoso else "Fallido"

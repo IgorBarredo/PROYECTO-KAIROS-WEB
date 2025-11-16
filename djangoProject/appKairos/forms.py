@@ -243,6 +243,7 @@ class Verificar2FAForm(forms.Form):
         label='Código de autenticación',
         max_length=6,
         min_length=6,
+        required=False,
         widget=forms.TextInput(attrs={
             'class': 'form-control',
             'placeholder': '000000',
@@ -254,14 +255,129 @@ class Verificar2FAForm(forms.Form):
         help_text='Ingresa el código de 6 dígitos de tu aplicación de autenticación.'
     )
     
-    def clean_codigo_2fa(self):
-        """Valida que el código sea numérico de 6 dígitos"""
-        codigo = self.cleaned_data.get('codigo_2fa')
-        if not codigo.isdigit():
-            raise ValidationError('El código debe contener solo números.')
-        if len(codigo) != 6:
-            raise ValidationError('El código debe tener exactamente 6 dígitos.')
-        return codigo
+    codigo_respaldo = forms.CharField(
+        label='Código de respaldo',
+        max_length=8,
+        required=False,
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'XXXXXXXX',
+            'autocomplete': 'off'
+        }),
+        help_text='O ingresa un código de respaldo si no tienes acceso a tu aplicador.'
+    )
+    
+    def clean(self):
+        """Valida que al menos uno de los códigos esté presente"""
+        cleaned_data = super().clean()
+        codigo_2fa = cleaned_data.get('codigo_2fa')
+        codigo_respaldo = cleaned_data.get('codigo_respaldo')
+        
+        if not codigo_2fa and not codigo_respaldo:
+            raise ValidationError('Debes ingresar un código 2FA o un código de respaldo.')
+        
+        if codigo_2fa and not codigo_2fa.isdigit():
+            raise ValidationError('El código 2FA debe contener solo números.')
+        
+        if codigo_2fa and len(codigo_2fa) != 6:
+            raise ValidationError('El código 2FA debe tener exactamente 6 dígitos.')
+        
+        return cleaned_data
+
+
+class Desactivar2FAForm(forms.Form):
+    """
+    Formulario para desactivar 2FA con verificación de contraseña
+    """
+    password = forms.CharField(
+        label='Contraseña actual',
+        widget=forms.PasswordInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Ingresa tu contraseña para confirmar',
+            'autocomplete': 'current-password'
+        }),
+        help_text='Por seguridad, debes ingresar tu contraseña para desactivar 2FA.'
+    )
+
+
+class SolicitarRecuperacionPasswordForm(forms.Form):
+    """
+    Formulario para solicitar recuperación de contraseña
+    """
+    email = forms.EmailField(
+        label='Email',
+        widget=forms.EmailInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'tu_email@ejemplo.com',
+            'autocomplete': 'email',
+            'autofocus': True
+        }),
+        help_text='Ingresa el email asociado a tu cuenta.'
+    )
+
+
+class ResetPasswordForm(forms.Form):
+    """
+    Formulario para establecer nueva contraseña
+    """
+    password_nueva = forms.CharField(
+        label='Nueva contraseña',
+        widget=forms.PasswordInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Nueva contraseña',
+            'autocomplete': 'new-password'
+        }),
+        help_text='''
+        Tu contraseña debe contener:
+        • Al menos 8 caracteres
+        • Al menos una letra mayúscula
+        • Al menos una letra minúscula
+        • Al menos un número
+        • Al menos un carácter especial (@$!%*?&)
+        '''
+    )
+    
+    password_confirmacion = forms.CharField(
+        label='Confirmar nueva contraseña',
+        widget=forms.PasswordInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Confirmar nueva contraseña',
+            'autocomplete': 'new-password'
+        })
+    )
+    
+    def clean_password_nueva(self):
+        """Valida que la nueva contraseña cumpla con los requisitos"""
+        password = self.cleaned_data.get('password_nueva')
+        
+        if len(password) < 8:
+            raise ValidationError('La contraseña debe tener al menos 8 caracteres.')
+        
+        if not re.search(r'[A-Z]', password):
+            raise ValidationError('La contraseña debe contener al menos una letra mayúscula.')
+        
+        if not re.search(r'[a-z]', password):
+            raise ValidationError('La contraseña debe contener al menos una letra minúscula.')
+        
+        if not re.search(r'\d', password):
+            raise ValidationError('La contraseña debe contener al menos un número.')
+        
+        if not re.search(r'[@$!%*?&]', password):
+            raise ValidationError('La contraseña debe contener al menos un carácter especial (@$!%*?&).')
+        
+        return password
+    
+    def clean(self):
+        """Valida que las contraseñas coincidan"""
+        cleaned_data = super().clean()
+        password_nueva = cleaned_data.get('password_nueva')
+        password_confirmacion = cleaned_data.get('password_confirmacion')
+        
+        if password_nueva and password_confirmacion:
+            if password_nueva != password_confirmacion:
+                raise ValidationError('Las contraseñas no coinciden.')
+        
+        return cleaned_data
 
 
 class ContactoForm(forms.Form):

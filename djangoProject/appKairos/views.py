@@ -18,12 +18,13 @@ from datetime import datetime, timedelta
 
 from .models import (
     Usuario, Mercado, Producto, ProductoContratado, 
-    Resultado, TokenVerificacionEmail, SesionSeguridad
+    Resultado, TokenVerificacionEmail, TokenRecuperacionPassword, SesionSeguridad
 )
 from .forms import (
     RegistroUsuarioForm, LoginForm, VerificarEmailForm,
     Activar2FAForm, Verificar2FAForm, ContactoForm,
-    ContratarProductoForm, ActualizarPerfilForm, CambiarPasswordForm
+    ContratarProductoForm, ActualizarPerfilForm, CambiarPasswordForm,
+    SolicitarRecuperacionPasswordForm, ResetPasswordForm, Desactivar2FAForm
 )
 
 
@@ -127,6 +128,8 @@ def login_view(request):
                 if user.tiene_2fa_activo:
                     # Guardar user_id en sesión para verificación 2FA
                     request.session['pre_2fa_user_id'] = user.id
+                    request.session['pre_2fa_timestamp'] = timezone.now().timestamp()
+                    request.session['intentos_2fa'] = 0
                     return redirect('appKairos:verificar_2fa')
                 else:
                     # Login directo
@@ -149,6 +152,9 @@ def login_view(request):
                     pass
                 
                 messages.error(request, 'Email o contraseña incorrectos.')
+        else:
+            # Si el formulario no es válido, mostrar mensaje de error
+            messages.error(request, 'Email o contraseña incorrectos.')
     else:
         form = LoginForm()
     
@@ -186,6 +192,7 @@ def verificar_email_view(request, token):
         usuario = token_obj.usuario
         usuario.is_active = True
         usuario.email_verificado = True
+        usuario.fecha_verificacion_email = timezone.now()
         usuario.save()
         
         # Marcar token como usado
@@ -251,6 +258,119 @@ def reenviar_verificacion_view(request):
 
 
 # ============================================================================
+# VISTAS DE RECUPERACIÓN DE CONTRASEÑA
+# ============================================================================
+
+def solicitar_recuperacion_view(request):
+    """Vista para solicitar recuperación de contraseña"""
+    if request.user.is_authenticated:
+        return redirect('appKairos:dashboard')
+    
+    if request.method == 'POST':
+        form = SolicitarRecuperacionPasswordForm(request.POST)
+        if form.is_valid():
+            email = form.cleaned_data['email']
+            try:
+                usuario = Usuario.objects.get(email=email, is_active=True)
+                
+                # Invalidar tokens anteriores
+                TokenRecuperacionPassword.objects.filter(
+                    usuario=usuario, 
+                    usado=False
+                ).update(usado=True)
+                
+                # Crear nuevo token
+                token = secrets.token_urlsafe(32)
+                TokenRecuperacionPassword.objects.create(
+                    usuario=usuario,
+                    token=token,
+                    expira_en=timezone.now() + timedelta(hours=1)
+                )
+                
+                # Enviar email
+                reset_url = request.build_absolute_uri(
+                    reverse('appKairos:reset_password', kwargs={'token': token})
+                )
+                
+                send_mail(
+                    subject='Recuperación de Contraseña - Proyecto Kairos',
+                    message=f'''
+                    Hola {usuario.first_name or usuario.username},
+                    
+                    Has solicitado restablecer tu contraseña.
+                    
+                    Por favor haz clic en el siguiente enlace para crear una nueva contraseña:
+                    {reset_url}
+                    
+                    Este enlace expirará en 1 hora.
+                    
+                    Si no solicitaste este cambio, ignora este email y tu contraseña permanecerá sin cambios.
+                    
+                    Saludos,
+                    Equipo Proyecto Kairos
+                    ''',
+                    from_email=settings.DEFAULT_FROM_EMAIL,
+                    recipient_list=[usuario.email],
+                    fail_silently=False,
+                )
+                
+                messages.success(request, 'Se ha enviado un enlace de recuperación a tu email.')
+                return redirect('appKairos:recuperacion_enviada')
+                
+            except Usuario.DoesNotExist:
+                # Por seguridad, no revelar si el email existe o no
+                messages.success(request, 'Si el email existe en nuestro sistema, recibirás un enlace de recuperación.')
+                return redirect('appKairos:recuperacion_enviada')
+    else:
+        form = SolicitarRecuperacionPasswordForm()
+    
+    return render(request, 'solicitar_recuperacion.html', {'form': form})
+
+
+def recuperacion_enviada_view(request):
+    """Vista que confirma el envío del email de recuperación"""
+    return render(request, 'recuperacion_enviada.html')
+
+
+def reset_password_view(request, token):
+    """Vista para restablecer la contraseña con token"""
+    try:
+        token_obj = TokenRecuperacionPassword.objects.get(
+            token=token,
+            usado=False,
+            expira_en__gt=timezone.now()
+        )
+        usuario = token_obj.usuario
+        
+        if request.method == 'POST':
+            form = ResetPasswordForm(request.POST)
+            if form.is_valid():
+                nueva_password = form.cleaned_data['password_nueva']
+                
+                # Cambiar contraseña
+                usuario.set_password(nueva_password)
+                usuario.save()
+                
+                # Marcar token como usado
+                token_obj.usado = True
+                token_obj.save()
+                
+                messages.success(request, 'Contraseña restablecida exitosamente. Ya puedes iniciar sesión.')
+                return redirect('appKairos:login')
+        else:
+            form = ResetPasswordForm()
+        
+        return render(request, 'reset_password.html', {
+            'form': form,
+            'token': token
+        })
+        
+    except TokenRecuperacionPassword.DoesNotExist:
+        messages.error(request, 'El enlace de recuperación es inválido o ha expirado.')
+        return redirect('appKairos:solicitar_recuperacion')
+
+
+# ============================================================================
 # VISTAS DE 2FA (AUTENTICACIÓN DE DOS FACTORES)
 # ============================================================================
 
@@ -261,7 +381,7 @@ def activar_2fa_view(request):
     
     if usuario.tiene_2fa_activo:
         messages.info(request, 'Ya tienes 2FA activado.')
-        return redirect('appKairos:dashboard')
+        return redirect('appKairos:perfil')
     
     if request.method == 'POST':
         form = Activar2FAForm(request.POST)
@@ -271,13 +391,29 @@ def activar_2fa_view(request):
             # Verificar código
             totp = pyotp.TOTP(usuario.secreto_2fa)
             if totp.verify(codigo, valid_window=1):
+                # Generar códigos de respaldo
+                codigos_respaldo = Usuario.generar_codigos_respaldo()
+                
+                # Guardar códigos encriptados (separados por comas)
+                from django.contrib.auth.hashers import make_password
+                codigos_encriptados = [make_password(codigo) for codigo in codigos_respaldo]
+                usuario.codigos_respaldo_2fa = ','.join(codigos_encriptados)
+                
+                # Activar 2FA
                 usuario.tiene_2fa_activo = True
+                usuario.fecha_activacion_2fa = timezone.now()
                 usuario.save()
+                
+                # Guardar códigos en sesión para mostrarlos
+                request.session['codigos_respaldo_2fa'] = codigos_respaldo
+                
                 messages.success(request, '¡2FA activado exitosamente!')
-                return redirect('appKairos:dashboard')
+                return redirect('appKairos:mostrar_codigos_respaldo')
             else:
+                qr_code_base64 = None
                 messages.error(request, 'Código incorrecto. Por favor intenta de nuevo.')
     else:
+        qr_code_base64 = None
         # Generar secreto 2FA si no existe
         if not usuario.secreto_2fa:
             usuario.secreto_2fa = pyotp.random_base32()
@@ -311,10 +447,38 @@ def activar_2fa_view(request):
     return render(request, 'activar_2fa.html', context)
 
 
+@login_required
+def mostrar_codigos_respaldo_view(request):
+    """Vista para mostrar los códigos de respaldo 2FA"""
+    codigos = request.session.get('codigos_respaldo_2fa')
+    
+    if not codigos:
+        messages.warning(request, 'No hay códigos de respaldo para mostrar.')
+        return redirect('appKairos:dashboard')
+    
+    if request.method == 'POST':
+        # Usuario confirmó que guardó los códigos
+        del request.session['codigos_respaldo_2fa']
+        messages.info(request, 'Recuerda guardar tus códigos de respaldo en un lugar seguro.')
+        return redirect('appKairos:dashboard')
+    
+    return render(request, 'codigos_respaldo_2fa.html', {'codigos': codigos})
+
+
 def verificar_2fa_view(request):
-    """Vista para verificar código 2FA durante el login"""
+    """Vista mejorada para verificar código 2FA durante el login"""
     user_id = request.session.get('pre_2fa_user_id')
-    if not user_id:
+    timestamp = request.session.get('pre_2fa_timestamp')
+    
+    # Verificar timeout (5 minutos)
+    if not user_id or not timestamp:
+        messages.error(request, 'Sesión expirada. Por favor inicia sesión nuevamente.')
+        return redirect('appKairos:login')
+    
+    if timezone.now().timestamp() - timestamp > 300:  # 5 minutos
+        del request.session['pre_2fa_user_id']
+        del request.session['pre_2fa_timestamp']
+        messages.error(request, 'Tiempo de verificación expirado. Inicia sesión nuevamente.')
         return redirect('appKairos:login')
     
     try:
@@ -322,36 +486,125 @@ def verificar_2fa_view(request):
     except Usuario.DoesNotExist:
         return redirect('appKairos:login')
     
+    # Verificar intentos fallidos
+    intentos = request.session.get('intentos_2fa', 0)
+    if intentos >= 3:
+        del request.session['pre_2fa_user_id']
+        messages.error(request, 'Demasiados intentos fallidos. Por favor inicia sesión nuevamente.')
+        return redirect('appKairos:login')
+    
     if request.method == 'POST':
         form = Verificar2FAForm(request.POST)
         if form.is_valid():
-            codigo = form.cleaned_data['codigo_2fa']
+            codigo_2fa = form.cleaned_data.get('codigo_2fa')
+            codigo_respaldo = form.cleaned_data.get('codigo_respaldo')
             
-            # Verificar código
-            totp = pyotp.TOTP(usuario.secreto_2fa)
-            if totp.verify(codigo, valid_window=1):
-                # Login exitoso
-                login(request, usuario)
+            verificacion_exitosa = False
+            
+            # Verificar código TOTP
+            if codigo_2fa:
+                totp = pyotp.TOTP(usuario.secreto_2fa)
+                if totp.verify(codigo_2fa, valid_window=1):
+                    verificacion_exitosa = True
+            
+            # Verificar código de respaldo
+            elif codigo_respaldo and usuario.codigos_respaldo_2fa:
+                from django.contrib.auth.hashers import check_password
+                codigos_encriptados = usuario.codigos_respaldo_2fa.split(',')
+                
+                for idx, codigo_encriptado in enumerate(codigos_encriptados):
+                    if check_password(codigo_respaldo, codigo_encriptado):
+                        # Código de respaldo válido - eliminarlo
+                        codigos_encriptados.pop(idx)
+                        usuario.codigos_respaldo_2fa = ','.join(codigos_encriptados)
+                        usuario.save()
+                        verificacion_exitosa = True
+                        messages.info(request, 'Has usado un código de respaldo. Te quedan {} códigos.'.format(len(codigos_encriptados)))
+                        break
+            
+            if verificacion_exitosa:
+                # Login exitoso - especificar backend explícitamente
+                from django.contrib.auth import get_backends
+                backend = get_backends()[0]
+                usuario.backend = f'{backend.__module__}.{backend.__class__.__name__}'
+                login(request, usuario, backend=usuario.backend)
+                
+                # Limpiar sesión temporal
                 del request.session['pre_2fa_user_id']
+                del request.session['pre_2fa_timestamp']
+                if 'intentos_2fa' in request.session:
+                    del request.session['intentos_2fa']
+                
+                # Registrar sesión exitosa
+                SesionSeguridad.objects.create(
+                    usuario=usuario,
+                    ip_address=get_client_ip(request),
+                    user_agent=request.META.get('HTTP_USER_AGENT', ''),
+                    exitoso=True,
+                    requirio_2fa=True
+                )
+                
                 messages.success(request, f'Bienvenido de vuelta, {usuario.first_name or usuario.username}!')
                 return redirect('appKairos:dashboard')
             else:
-                messages.error(request, 'Código 2FA incorrecto.')
+                qr_code_base64 = None
+                # Incrementar intentos fallidos
+                request.session['intentos_2fa'] = intentos + 1
+                
+                # Registrar intento fallido
+                SesionSeguridad.objects.create(
+                    usuario=usuario,
+                    ip_address=get_client_ip(request),
+                    user_agent=request.META.get('HTTP_USER_AGENT', ''),
+                    exitoso=False,
+                    requirio_2fa=True,
+                    motivo_fallo='Código 2FA incorrecto'
+                )
+                
+                messages.error(request, f'Código incorrecto. Intentos restantes: {3 - intentos - 1}')
     else:
+        qr_code_base64 = None
         form = Verificar2FAForm()
     
-    return render(request, 'verificar_2fa.html', {'form': form})
+    return render(request, 'verificar_2fa.html', {
+        'form': form,
+        'intentos_restantes': 3 - intentos
+    })
 
 
 @login_required
 def desactivar_2fa_view(request):
-    """Vista para desactivar 2FA"""
+    """Vista mejorada para desactivar 2FA con verificación de contraseña"""
+    usuario = request.user
+    
+    if not usuario.tiene_2fa_activo:
+        messages.info(request, 'No tienes 2FA activado.')
+        return redirect('appKairos:perfil')
+    
     if request.method == 'POST':
-        usuario = request.user
-        usuario.tiene_2fa_activo = False
-        usuario.save()
-        messages.success(request, '2FA desactivado exitosamente.')
-    return redirect('appKairos:dashboard')
+        form = Desactivar2FAForm(request.POST)
+        if form.is_valid():
+            password = form.cleaned_data['password']
+            
+            # Verificar contraseña
+            if usuario.check_password(password):
+                # Desactivar 2FA
+                usuario.tiene_2fa_activo = False
+                usuario.secreto_2fa = None
+                usuario.codigos_respaldo_2fa = None
+                usuario.fecha_activacion_2fa = None
+                usuario.save()
+                
+                messages.success(request, '2FA desactivado exitosamente.')
+                return redirect('appKairos:perfil')
+            else:
+                qr_code_base64 = None
+                messages.error(request, 'Contraseña incorrecta.')
+    else:
+        qr_code_base64 = None
+        form = Desactivar2FAForm()
+    
+    return render(request, 'desactivar_2fa.html', {'form': form})
 
 
 # ============================================================================
@@ -442,6 +695,7 @@ def contratar_producto_view(request, producto_id):
             messages.success(request, f'Producto "{producto.nombre}" contratado exitosamente.')
             return redirect('appKairos:dashboard')
     else:
+        qr_code_base64 = None
         form = ContratarProductoForm(initial={'producto': producto})
     
     context = {
@@ -480,6 +734,7 @@ def perfil_view(request):
             messages.success(request, 'Perfil actualizado exitosamente.')
             return redirect('appKairos:perfil')
     else:
+        qr_code_base64 = None
         form = ActualizarPerfilForm(instance=request.user)
     
     return render(request, 'perfil.html', {'form': form})
@@ -506,8 +761,10 @@ def cambiar_password_view(request):
                 messages.success(request, 'Contraseña cambiada exitosamente.')
                 return redirect('appKairos:perfil')
             else:
+                qr_code_base64 = None
                 messages.error(request, 'Contraseña actual incorrecta.')
     else:
+        qr_code_base64 = None
         form = CambiarPasswordForm()
     
     return render(request, 'cambiar_password.html', {'form': form})
@@ -632,6 +889,7 @@ def contacto_view(request):
         messages.success(request, 'Mensaje enviado exitosamente. Te responderemos pronto.')
         return redirect('appKairos:index')
     else:
+        qr_code_base64 = None
         messages.error(request, 'Por favor corrige los errores en el formulario.')
         return redirect('appKairos:index')
 
@@ -646,5 +904,6 @@ def get_client_ip(request):
     if x_forwarded_for:
         ip = x_forwarded_for.split(',')[0]
     else:
+        qr_code_base64 = None
         ip = request.META.get('REMOTE_ADDR')
     return ip

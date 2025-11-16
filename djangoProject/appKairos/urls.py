@@ -21,8 +21,14 @@ urlpatterns = [
     path('verify-email/<str:token>/', views.verificar_email_view, name='verificar_email'),
     path('resend-verification/', views.reenviar_verificacion_view, name='reenviar_verificacion'),
     
+    # Recuperación de contraseña
+    path('solicitar-recuperacion/', views.solicitar_recuperacion_view, name='solicitar_recuperacion'),
+    path('recuperacion-enviada/', views.recuperacion_enviada_view, name='recuperacion_enviada'),
+    path('reset-password/<str:token>/', views.reset_password_view, name='reset_password'),
+    
     # 2FA
     path('activar-2fa/', views.activar_2fa_view, name='activar_2fa'),
+    path('mostrar-codigos-respaldo/', views.mostrar_codigos_respaldo_view, name='mostrar_codigos_respaldo'),
     path('verificar-2fa/', views.verificar_2fa_view, name='verificar_2fa'),
     path('desactivar-2fa/', views.desactivar_2fa_view, name='desactivar_2fa'),
     
