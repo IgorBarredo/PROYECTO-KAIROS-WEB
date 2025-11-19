@@ -1,0 +1,913 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="https://public-frontend-cos.metadl.com/mgx/img/favicon.png" type="image/png">
+    <title>Diagramas de Flujo - Proyecto Kairos</title>
+    <link rel="stylesheet" href="./style.css">
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+</head>
+
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <h1>📊 Diagramas de Flujo - Proyecto Kairos</h1>
+            <p class="subtitle">Plataforma de Trading Algorítmico con Django</p>
+        </header>
+
+        <!-- Navigation -->
+        <nav class="nav-menu">
+            <a href="#autenticacion" class="nav-link">🔐 Autenticación</a>
+            <a href="#recuperacion" class="nav-link">🔑 Recuperación</a>
+            <a href="#2fa" class="nav-link">📱 2FA</a>
+            <a href="#dashboard" class="nav-link">📈 Dashboard</a>
+            <a href="#perfil" class="nav-link">👤 Perfil</a>
+            <a href="#publicas" class="nav-link">🌐 Páginas</a>
+            <a href="#modelos" class="nav-link">🗄️ Modelos</a>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="content">
+            
+            <!-- SECCIÓN: AUTENTICACIÓN -->
+            <section id="autenticacion" class="section">
+                <h2 class="section-title">🔐 Flujos de Autenticación</h2>
+                
+                <div class="diagram-card">
+                    <h3>1. Registro de Usuario</h3>
+                    <div class="mermaid">
+                        graph TD
+                            A[Usuario accede a /register/] --> B{¿Autenticado?}
+                            B -->|Sí| C[Redirigir a Dashboard]
+                            B -->|No| D[Mostrar formulario registro]
+                            D --> E[Usuario completa formulario]
+                            E --> F{¿Formulario válido?}
+                            F -->|No| G[Mostrar errores]
+                            G --> D
+                            F -->|Sí| H[Crear usuario inactivo]
+                            H --> I[Generar token verificación]
+                            I --> J[Enviar email verificación]
+                            J --> K[Mostrar mensaje éxito]
+                            K --> L[Redirigir a /verify-email-sent/]
+                            
+                            style A fill:#0077b6,stroke:#00b4d8,color:#fff
+                            style H fill:#00b4d8,stroke:#0077b6,color:#fff
+                            style J fill:#00ddff,stroke:#0077b6,color:#000
+                            style L fill:#90e0ef,stroke:#0077b6,color:#000
+                    </div>
+                </div>
+
+                <div class="diagram-card">
+                    <h3>2. Verificación de Email</h3>
+                    <div class="mermaid">
+                        graph TD
+                            A[Usuario recibe email] --> B[Click en enlace verificación]
+                            B --> C[GET /verify-email/token/]
+                            C --> D{¿Token válido y no expirado?}
+                            D -->|No| E[Mostrar error token inválido]
+                            E --> F[Redirigir a index]
+                            D -->|Sí| G[Activar usuario]
+                            G --> H[Marcar email verificado]
+                            H --> I[Marcar token como usado]
+                            I --> J[Mostrar mensaje éxito]
+                            J --> K[Redirigir a /login/]
+                            
+                            style A fill:#0077b6,stroke:#00b4d8,color:#fff
+                            style G fill:#00b4d8,stroke:#0077b6,color:#fff
+                            style H fill:#00ddff,stroke:#0077b6,color:#000
+                            style K fill:#90e0ef,stroke:#0077b6,color:#000
+                    </div>
+                </div>
+
+                <div class="diagram-card">
+                    <h3>3. Login (Sin 2FA)</h3>
+                    <div class="mermaid">
+                        graph TD
+                            A[Usuario accede a /login/] --> B{¿Autenticado?}
+                            B -->|Sí| C[Redirigir a Dashboard]
+                            B -->|No| D[Mostrar formulario login]
+                            D --> E[Usuario ingresa email y password]
+                            E --> F{¿Credenciales válidas?}
+                            F -->|No| G[Registrar intento fallido]
+                            G --> H[Mostrar error]
+                            H --> D
+                            F -->|Sí| I{¿Tiene 2FA activo?}
+                            I -->|Sí| J[Guardar user_id en sesión]
+                            J --> K[Redirigir a /verificar-2fa/]
+                            I -->|No| L[Registrar login exitoso]
+                            L --> M[Iniciar sesión]
+                            M --> N{¿Recordarme?}
+                            N -->|No| O[Sesión expira al cerrar]
+                            N -->|Sí| P[Sesión 2 semanas]
+                            O --> Q[Redirigir a Dashboard]
+                            P --> Q
+                            
+                            style A fill:#0077b6,stroke:#00b4d8,color:#fff
+                            style F fill:#00b4d8,stroke:#0077b6,color:#fff
+                            style M fill:#00ddff,stroke:#0077b6,color:#000
+                            style Q fill:#90e0ef,stroke:#0077b6,color:#000
+                    </div>
+                </div>
+
+                <div class="diagram-card">
+                    <h3>4. Login (Con 2FA)</h3>
+                    <div class="mermaid">
+                        graph TD
+                            A[Redirigido a /verificar-2fa/] --> B{¿Sesión válida?}
+                            B -->|No| C[Redirigir a /login/]
+                            B -->|Sí| D{¿Timeout 5 min?}
+                            D -->|Sí| E[Limpiar sesión]
+                            E --> C
+                            D -->|No| F[Mostrar formulario 2FA]
+                            F --> G{¿Intentos < 3?}
+                            G -->|No| H[Limpiar sesión]
+                            H --> C
+                            G -->|Sí| I[Usuario ingresa código]
+                            I --> J{¿Código TOTP o Respaldo?}
+                            J -->|TOTP| K{¿Código válido?}
+                            J -->|Respaldo| L{¿Código respaldo válido?}
+                            K -->|No| M[Incrementar intentos]
+                            L -->|No| M
+                            M --> N[Registrar intento fallido]
+                            N --> F
+                            K -->|Sí| O[Login exitoso]
+                            L -->|Sí| P[Eliminar código usado]
+                            P --> Q[Notificar códigos restantes]
+                            Q --> O
+                            O --> R[Limpiar sesión temporal]
+                            R --> S[Registrar sesión exitosa]
+                            S --> T[Redirigir a Dashboard]
+                            
+                            style A fill:#0077b6,stroke:#00b4d8,color:#fff
+                            style K fill:#00b4d8,stroke:#0077b6,color:#fff
+                            style O fill:#00ddff,stroke:#0077b6,color:#000
+                            style T fill:#90e0ef,stroke:#0077b6,color:#000
+                    </div>
+                </div>
+
+                <div class="diagram-card">
+                    <h3>5. Logout</h3>
+                    <div class="mermaid">
+                        graph TD
+                            A[Usuario click en Logout] --> B[GET /logout/]
+                            B --> C[Cerrar sesión Django]
+                            C --> D[Mostrar mensaje éxito]
+                            D --> E[Redirigir a index /]
+                            
+                            style A fill:#0077b6,stroke:#00b4d8,color:#fff
+                            style C fill:#00b4d8,stroke:#0077b6,color:#fff
+                            style E fill:#90e0ef,stroke:#0077b6,color:#000
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECCIÓN: RECUPERACIÓN DE CONTRASEÑA -->
+            <section id="recuperacion" class="section">
+                <h2 class="section-title">🔑 Recuperación de Contraseña</h2>
+                
+                <div class="diagram-card">
+                    <h3>1. Solicitar Recuperación</h3>
+                    <div class="mermaid">
+                        graph TD
+                            A[Usuario accede a /solicitar-recuperacion/] --> B{¿Autenticado?}
+                            B -->|Sí| C[Redirigir a Dashboard]
+                            B -->|No| D[Mostrar formulario]
+                            D --> E[Usuario ingresa email]
+                            E --> F{¿Email válido?}
+                            F -->|No| G[Mostrar error]
+                            G --> D
+                            F -->|Sí| H{¿Usuario existe y activo?}
+                            H -->|No| I[Mensaje genérico por seguridad]
+                            H -->|Sí| J[Invalidar tokens anteriores]
+                            J --> K[Generar nuevo token]
+                            K --> L[Token expira en 1 hora]
+                            L --> M[Enviar email con enlace]
+                            M --> I
+                            I --> N[Redirigir a /recuperacion-enviada/]
+                            
+                            style A fill:#0077b6,stroke:#00b4d8,color:#fff
+                            style K fill:#00b4d8,stroke:#0077b6,color:#fff
+                            style M fill:#00ddff,stroke:#0077b6,color:#000
+                            style N fill:#90e0ef,stroke:#0077b6,color:#000
+                    </div>
+                </div>
+
+                <div class="diagram-card">
+                    <h3>2. Restablecer Contraseña</h3>
+                    <div class="mermaid">
+                        graph TD
+                            A[Usuario click en enlace email] --> B[GET /reset-password/token/]
+                            B --> C{¿Token válido y no expirado?}
+                            C -->|No| D[Mostrar error token inválido]
+                            D --> E[Redirigir a /solicitar-recuperacion/]
+                            C -->|Sí| F[Mostrar formulario nueva password]
+                            F --> G[Usuario ingresa nueva password]
+                            G --> H{¿Password válida?}
+                            H -->|No| I[Mostrar errores validación]
+                            I --> F
+                            H -->|Sí| J{¿Passwords coinciden?}
+                            J -->|No| K[Mostrar error coincidencia]
+                            K --> F
+                            J -->|Sí| L[Cambiar contraseña usuario]
+                            L --> M[Marcar token como usado]
+                            M --> N[Mostrar mensaje éxito]
+                            N --> O[Redirigir a /login/]
+                            
+                            style A fill:#0077b6,stroke:#00b4d8,color:#fff
+                            style L fill:#00b4d8,stroke:#0077b6,color:#fff
+                            style M fill:#00ddff,stroke:#0077b6,color:#000
+                            style O fill:#90e0ef,stroke:#0077b6,color:#000
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECCIÓN: 2FA -->
+            <section id="2fa" class="section">
+                <h2 class="section-title">📱 Autenticación de Dos Factores (2FA)</h2>
+                
+                <div class="diagram-card">
+                    <h3>1. Activar 2FA</h3>
+                    <div class="mermaid">
+                        graph TD
+                            A[Usuario accede a /activar-2fa/] --> B{¿Ya tiene 2FA activo?}
+                            B -->|Sí| C[Mostrar mensaje info]
+                            C --> D[Redirigir a /perfil/]
+                            B -->|No| E{¿Tiene secreto 2FA?}
+                            E -->|No| F[Generar secreto TOTP]
+                            F --> G[Guardar secreto en BD]
+                            E -->|Sí| G
+                            G --> H[Generar código QR]
+                            H --> I[Mostrar QR y secreto]
+                            I --> J[Usuario escanea con Google Auth]
+                            J --> K[Usuario ingresa código verificación]
+                            K --> L{¿Código válido?}
+                            L -->|No| M[Mostrar error]
+                            M --> I
+                            L -->|Sí| N[Generar 10 códigos respaldo]
+                            N --> O[Encriptar códigos con bcrypt]
+                            O --> P[Guardar códigos en BD]
+                            P --> Q[Activar 2FA en usuario]
+                            Q --> R[Guardar códigos en sesión]
+                            R --> S[Redirigir a /mostrar-codigos-respaldo/]
+                            
+                            style A fill:#0077b6,stroke:#00b4d8,color:#fff
+                            style N fill:#00b4d8,stroke:#0077b6,color:#fff
+                            style Q fill:#00ddff,stroke:#0077b6,color:#000
+                            style S fill:#90e0ef,stroke:#0077b6,color:#000
+                    </div>
+                </div>
+
+                <div class="diagram-card">
+                    <h3>2. Mostrar Códigos de Respaldo</h3>
+                    <div class="mermaid">
+                        graph TD
+                            A[Redirigido a /mostrar-codigos-respaldo/] --> B{¿Hay códigos en sesión?}
+                            B -->|No| C[Mostrar warning]
+                            C --> D[Redirigir a Dashboard]
+                            B -->|Sí| E[Mostrar 10 códigos]
+                            E --> F[Usuario puede copiar/imprimir]
+                            F --> G[Usuario confirma guardado]
+                            G --> H[Eliminar códigos de sesión]
+                            H --> I[Mostrar recordatorio]
+                            I --> D
+                            
+                            style A fill:#0077b6,stroke:#00b4d8,color:#fff
+                            style E fill:#00b4d8,stroke:#0077b6,color:#fff
+                            style H fill:#00ddff,stroke:#0077b6,color:#000
+                            style D fill:#90e0ef,stroke:#0077b6,color:#000
+                    </div>
+                </div>
+
+                <div class="diagram-card">
+                    <h3>3. Desactivar 2FA</h3>
+                    <div class="mermaid">
+                        graph TD
+                            A[Usuario accede a /desactivar-2fa/] --> B{¿Tiene 2FA activo?}
+                            B -->|No| C[Mostrar mensaje info]
+                            C --> D[Redirigir a /perfil/]
+                            B -->|Sí| E[Mostrar advertencias seguridad]
+                            E --> F[Mostrar formulario contraseña]
+                            F --> G[Usuario ingresa contraseña]
+                            G --> H{¿Contraseña correcta?}
+                            H -->|No| I[Mostrar error]
+                            I --> F
+                            H -->|Sí| J[Desactivar 2FA]
+                            J --> K[Eliminar secreto_2fa]
+                            K --> L[Eliminar códigos_respaldo]
+                            L --> M[Limpiar fecha_activacion]
+                            M --> N[Mostrar mensaje éxito]
+                            N --> D
+                            
+                            style A fill:#0077b6,stroke:#00b4d8,color:#fff
+                            style J fill:#00b4d8,stroke:#0077b6,color:#fff
+                            style L fill:#00ddff,stroke:#0077b6,color:#000
+                            style D fill:#90e0ef,stroke:#0077b6,color:#000
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECCIÓN: DASHBOARD Y PRODUCTOS -->
+            <section id="dashboard" class="section">
+                <h2 class="section-title">📈 Dashboard y Productos</h2>
+                
+                <div class="diagram-card">
+                    <h3>1. Ver Dashboard</h3>
+                    <div class="mermaid">
+                        graph TD
+                            A[Usuario accede a /dashboard/] --> B[Obtener productos contratados]
+                            B --> C[Calcular capital total activo]
+                            C --> D[Actualizar capital_total usuario]
+                            D --> E[Obtener resultados mensuales]
+                            E --> F[Preparar datos para gráficas]
+                            F --> G[Obtener productos disponibles]
+                            G --> H[Calcular estadísticas]
+                            H --> I[Total invertido]
+                            I --> J[Ganancia total]
+                            J --> K[Porcentaje ganancia]
+                            K --> L[Renderizar dashboard_en.html]
+                            L --> M[Mostrar gráficas Chart.js]
+                            
+                            style A fill:#0077b6,stroke:#00b4d8,color:#fff
+                            style C fill:#00b4d8,stroke:#0077b6,color:#fff
+                            style H fill:#00ddff,stroke:#0077b6,color:#000
+                            style M fill:#90e0ef,stroke:#0077b6,color:#000
+                    </div>
+                </div>
+
+                <div class="diagram-card">
+                    <h3>2. Contratar Producto</h3>
+                    <div class="mermaid">
+                        graph TD
+                            A[Usuario click en Contratar] --> B[GET /contratar-producto/id/]
+                            B --> C{¿Producto existe y activo?}
+                            C -->|No| D[Error 404]
+                            C -->|Sí| E[Mostrar formulario]
+                            E --> F[Usuario ingresa monto]
+                            F --> G[Usuario acepta riesgos]
+                            G --> H{¿Formulario válido?}
+                            H -->|No| I[Mostrar errores]
+                            I --> E
+                            H -->|Sí| J{¿Monto >= 100€?}
+                            J -->|No| K[Error monto mínimo]
+                            K --> E
+                            J -->|Sí| L[Crear ProductoContratado]
+                            L --> M[Estado: activo]
+                            M --> N[capital_actual = monto_invertido]
+                            N --> O[Guardar en BD]
+                            O --> P[Mostrar mensaje éxito]
+                            P --> Q[Redirigir a Dashboard]
+                            
+                            style A fill:#0077b6,stroke:#00b4d8,color:#fff
+                            style L fill:#00b4d8,stroke:#0077b6,color:#fff
+                            style O fill:#00ddff,stroke:#0077b6,color:#000
+                            style Q fill:#90e0ef,stroke:#0077b6,color:#000
+                    </div>
+                </div>
+
+                <div class="diagram-card">
+                    <h3>3. Cancelar Producto</h3>
+                    <div class="mermaid">
+                        graph TD
+                            A[Usuario click en Cancelar] --> B[POST /cancelar-producto/id/]
+                            B --> C{¿Contrato existe y es del usuario?}
+                            C -->|No| D[Error 404]
+                            C -->|Sí| E[Cambiar estado a cancelado]
+                            E --> F[Establecer fecha_fin]
+                            F --> G[Guardar cambios]
+                            G --> H[Mostrar mensaje éxito]
+                            H --> I[Redirigir a Dashboard]
+                            
+                            style A fill:#0077b6,stroke:#00b4d8,color:#fff
+                            style E fill:#00b4d8,stroke:#0077b6,color:#fff
+                            style G fill:#00ddff,stroke:#0077b6,color:#000
+                            style I fill:#90e0ef,stroke:#0077b6,color:#000
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECCIÓN: PERFIL -->
+            <section id="perfil" class="section">
+                <h2 class="section-title">👤 Gestión de Perfil</h2>
+                
+                <div class="diagram-card">
+                    <h3>1. Ver y Actualizar Perfil</h3>
+                    <div class="mermaid">
+                        graph TD
+                            A[Usuario accede a /perfil/] --> B[Cargar datos usuario]
+                            B --> C[Mostrar formulario perfil]
+                            C --> D[Usuario modifica datos]
+                            D --> E[Usuario envía formulario]
+                            E --> F{¿Datos válidos?}
+                            F -->|No| G[Mostrar errores]
+                            G --> C
+                            F -->|Sí| H[Actualizar first_name]
+                            H --> I[Actualizar last_name]
+                            I --> J[Actualizar telefono]
+                            J --> K[Guardar cambios]
+                            K --> L[Mostrar mensaje éxito]
+                            L --> M[Redirigir a /perfil/]
+                            
+                            style A fill:#0077b6,stroke:#00b4d8,color:#fff
+                            style H fill:#00b4d8,stroke:#0077b6,color:#fff
+                            style K fill:#00ddff,stroke:#0077b6,color:#000
+                            style M fill:#90e0ef,stroke:#0077b6,color:#000
+                    </div>
+                </div>
+
+                <div class="diagram-card">
+                    <h3>2. Cambiar Contraseña</h3>
+                    <div class="mermaid">
+                        graph TD
+                            A[Usuario accede a /cambiar-password/] --> B[Mostrar formulario]
+                            B --> C[Usuario ingresa password actual]
+                            C --> D[Usuario ingresa password nueva]
+                            D --> E[Usuario confirma password]
+                            E --> F{¿Formulario válido?}
+                            F -->|No| G[Mostrar errores]
+                            G --> B
+                            F -->|Sí| H{¿Password actual correcta?}
+                            H -->|No| I[Error password incorrecta]
+                            I --> B
+                            H -->|Sí| J{¿Passwords nuevas coinciden?}
+                            J -->|No| K[Error no coinciden]
+                            K --> B
+                            J -->|Sí| L{¿Password cumple requisitos?}
+                            L -->|No| M[Mostrar requisitos]
+                            M --> B
+                            L -->|Sí| N[Cambiar contraseña]
+                            N --> O[Actualizar sesión auth]
+                            O --> P[Mostrar mensaje éxito]
+                            P --> Q[Redirigir a /perfil/]
+                            
+                            style A fill:#0077b6,stroke:#00b4d8,color:#fff
+                            style N fill:#00b4d8,stroke:#0077b6,color:#fff
+                            style O fill:#00ddff,stroke:#0077b6,color:#000
+                            style Q fill:#90e0ef,stroke:#0077b6,color:#000
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECCIÓN: PÁGINAS PÚBLICAS -->
+            <section id="publicas" class="section">
+                <h2 class="section-title">🌐 Páginas Públicas</h2>
+                
+                <div class="diagram-card">
+                    <h3>1. Página Principal (Index)</h3>
+                    <div class="mermaid">
+                        graph TD
+                            A[Usuario accede a /] --> B[Obtener productos destacados]
+                            B --> C[Obtener últimos resultados]
+                            C --> D[Renderizar index_en.html]
+                            D --> E[Mostrar hero section]
+                            E --> F[Mostrar productos]
+                            F --> G[Mostrar gráficas resultados]
+                            G --> H[Mostrar formulario contacto]
+                            
+                            style A fill:#0077b6,stroke:#00b4d8,color:#fff
+                            style B fill:#00b4d8,stroke:#0077b6,color:#fff
+                            style D fill:#00ddff,stroke:#0077b6,color:#000
+                            style H fill:#90e0ef,stroke:#0077b6,color:#000
+                    </div>
+                </div>
+
+                <div class="diagram-card">
+                    <h3>2. Newsletter</h3>
+                    <div class="mermaid">
+                        graph TD
+                            A[Usuario accede a /newsletter/] --> B[Mostrar formulario suscripción]
+                            B --> C[Usuario ingresa email]
+                            C --> D{¿Email válido?}
+                            D -->|No| E[Retornar JSON error]
+                            D -->|Sí| F[Guardar suscripción]
+                            F --> G[Enviar email bienvenida]
+                            G --> H[Retornar JSON success]
+                            H --> I[Mostrar mensaje éxito]
+                            
+                            style A fill:#0077b6,stroke:#00b4d8,color:#fff
+                            style F fill:#00b4d8,stroke:#0077b6,color:#fff
+                            style G fill:#00ddff,stroke:#0077b6,color:#000
+                            style I fill:#90e0ef,stroke:#0077b6,color:#000
+                    </div>
+                </div>
+
+                <div class="diagram-card">
+                    <h3>3. Contacto</h3>
+                    <div class="mermaid">
+                        graph TD
+                            A[Usuario envía formulario] --> B[POST /contacto/]
+                            B --> C{¿Formulario válido?}
+                            C -->|No| D[Mostrar errores]
+                            D --> E[Redirigir a index]
+                            C -->|Sí| F[Enviar email al equipo]
+                            F --> G[Enviar confirmación al usuario]
+                            G --> H[Mostrar mensaje éxito]
+                            H --> E
+                            
+                            style A fill:#0077b6,stroke:#00b4d8,color:#fff
+                            style F fill:#00b4d8,stroke:#0077b6,color:#fff
+                            style G fill:#00ddff,stroke:#0077b6,color:#000
+                            style E fill:#90e0ef,stroke:#0077b6,color:#000
+                    </div>
+                </div>
+
+                <div class="diagram-card">
+                    <h3>4. How We Work y Connect MT5</h3>
+                    <div class="mermaid">
+                        graph TD
+                            A[Usuario accede a página] --> B{¿Qué página?}
+                            B -->|/how-we-work/| C[Renderizar howwework.html]
+                            B -->|/connect-mt5/| D[Renderizar connect_en.html]
+                            C --> E[Mostrar contenido estático]
+                            D --> E
+                            E --> F[Mostrar instrucciones]
+                            
+                            style A fill:#0077b6,stroke:#00b4d8,color:#fff
+                            style C fill:#00b4d8,stroke:#0077b6,color:#fff
+                            style D fill:#00ddff,stroke:#0077b6,color:#000
+                            style F fill:#90e0ef,stroke:#0077b6,color:#000
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECCIÓN: MODELOS DE DATOS -->
+            <section id="modelos" class="section">
+                <h2 class="section-title">🗄️ Modelo de Datos y Relaciones</h2>
+                
+                <div class="diagram-card">
+                    <h3>1. Diagrama de Entidad-Relación</h3>
+                    <div class="mermaid">
+                        erDiagram
+                            USUARIO ||--o{ PRODUCTO_CONTRATADO : "contrata"
+                            USUARIO ||--o{ RESULTADO : "tiene"
+                            USUARIO ||--o{ TOKEN_VERIFICACION : "genera"
+                            USUARIO ||--o{ TOKEN_RECUPERACION : "solicita"
+                            USUARIO ||--o{ SESION_SEGURIDAD : "registra"
+                            PRODUCTO ||--o{ PRODUCTO_CONTRATADO : "es_contratado"
+                            PRODUCTO }o--o{ MERCADO : "opera_en"
+                            PRODUCTO_CONTRATADO ||--o{ RESULTADO : "genera"
+                            
+                            USUARIO {
+                                int id PK
+                                string email UK
+                                string username
+                                string password
+                                string first_name
+                                string last_name
+                                string telefono
+                                decimal capital_total
+                                boolean email_verificado
+                                boolean tiene_2fa_activo
+                                string secreto_2fa
+                                text codigos_respaldo_2fa
+                                datetime fecha_registro
+                            }
+                            
+                            PRODUCTO {
+                                int id PK
+                                string nombre
+                                string codigo UK
+                                text descripcion
+                                boolean activo
+                                datetime fecha_creacion
+                            }
+                            
+                            MERCADO {
+                                int id PK
+                                string nombre UK
+                                string codigo UK
+                                text descripcion
+                                boolean activo
+                            }
+                            
+                            PRODUCTO_CONTRATADO {
+                                int id PK
+                                int usuario_id FK
+                                int producto_id FK
+                                decimal monto_invertido
+                                decimal capital_actual
+                                string estado
+                                datetime fecha_contratacion
+                                datetime fecha_inicio
+                                datetime fecha_fin
+                            }
+                            
+                            RESULTADO {
+                                int id PK
+                                int usuario_id FK
+                                int producto_contratado_id FK
+                                date fecha
+                                string mes
+                                int anio
+                                decimal capital_mes
+                                decimal cambio_mensual
+                                decimal porcentaje_cambio
+                            }
+                            
+                            TOKEN_VERIFICACION {
+                                int id PK
+                                int usuario_id FK
+                                string token UK
+                                datetime fecha_creacion
+                                datetime expira_en
+                                boolean usado
+                            }
+                            
+                            TOKEN_RECUPERACION {
+                                int id PK
+                                int usuario_id FK
+                                string token UK
+                                datetime fecha_creacion
+                                datetime expira_en
+                                boolean usado
+                            }
+                            
+                            SESION_SEGURIDAD {
+                                int id PK
+                                int usuario_id FK
+                                string ip_address
+                                text user_agent
+                                boolean exitoso
+                                boolean requirio_2fa
+                                datetime fecha_intento
+                                string motivo_fallo
+                            }
+                    </div>
+                </div>
+
+                <div class="diagram-card">
+                    <h3>2. Flujo de Cálculo de Capital</h3>
+                    <div class="mermaid">
+                        graph TD
+                            A[Trigger: Actualización Dashboard] --> B[Obtener ProductosContratados]
+                            B --> C[Filtrar estado = activo]
+                            C --> D[Sumar capital_actual de todos]
+                            D --> E[Actualizar Usuario.capital_total]
+                            E --> F[Guardar en BD]
+                            
+                            G[Trigger: Nuevo Resultado Mensual] --> H[Obtener capital mes anterior]
+                            H --> I[Calcular cambio_mensual]
+                            I --> J[Calcular porcentaje_cambio]
+                            J --> K[Guardar Resultado]
+                            K --> L[Actualizar ProductoContratado.capital_actual]
+                            L --> F
+                            
+                            style A fill:#0077b6,stroke:#00b4d8,color:#fff
+                            style G fill:#0077b6,stroke:#00b4d8,color:#fff
+                            style E fill:#00ddff,stroke:#0077b6,color:#000
+                            style F fill:#90e0ef,stroke:#0077b6,color:#000
+                    </div>
+                </div>
+
+                <div class="diagram-card">
+                    <h3>3. Flujo de Seguridad y Auditoría</h3>
+                    <div class="mermaid">
+                        graph TD
+                            A[Intento de Login] --> B[Registrar en SesionSeguridad]
+                            B --> C[Capturar IP y User Agent]
+                            C --> D{¿Login exitoso?}
+                            D -->|Sí| E[exitoso = True]
+                            D -->|No| F[exitoso = False]
+                            F --> G[Registrar motivo_fallo]
+                            E --> H{¿Requirió 2FA?}
+                            H -->|Sí| I[requirio_2fa = True]
+                            H -->|No| J[requirio_2fa = False]
+                            G --> K[Guardar registro]
+                            I --> K
+                            J --> K
+                            K --> L[Timestamp fecha_intento]
+                            
+                            style A fill:#0077b6,stroke:#00b4d8,color:#fff
+                            style B fill:#00b4d8,stroke:#0077b6,color:#fff
+                            style K fill:#00ddff,stroke:#0077b6,color:#000
+                            style L fill:#90e0ef,stroke:#0077b6,color:#000
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECCIÓN: ARQUITECTURA -->
+            <section id="arquitectura" class="section">
+                <h2 class="section-title">🏗️ Arquitectura del Sistema</h2>
+                
+                <div class="diagram-card">
+                    <h3>1. Arquitectura General</h3>
+                    <div class="mermaid">
+                        graph TB
+                            subgraph "Frontend"
+                                A[HTML/CSS/JS]
+                                B[Chart.js]
+                                C[Templates Django]
+                            end
+                            
+                            subgraph "Backend Django"
+                                D[Views]
+                                E[Forms]
+                                F[Models]
+                                G[URLs]
+                                H[Backends Auth]
+                            end
+                            
+                            subgraph "Servicios"
+                                I[Email Service]
+                                J[2FA PyOTP]
+                                K[QR Code Generator]
+                            end
+                            
+                            subgraph "Base de Datos"
+                                L[(SQLite/PostgreSQL)]
+                            end
+                            
+                            subgraph "Seguridad"
+                                M[Django Auth]
+                                N[CSRF Protection]
+                                O[Session Management]
+                            end
+                            
+                            A --> D
+                            C --> D
+                            D --> E
+                            D --> F
+                            E --> F
+                            F --> L
+                            D --> I
+                            D --> J
+                            J --> K
+                            H --> M
+                            D --> O
+                            
+                            style A fill:#0077b6,stroke:#00b4d8,color:#fff
+                            style D fill:#00b4d8,stroke:#0077b6,color:#fff
+                            style F fill:#00ddff,stroke:#0077b6,color:#000
+                            style L fill:#90e0ef,stroke:#0077b6,color:#000
+                    </div>
+                </div>
+
+                <div class="diagram-card">
+                    <h3>2. Flujo de Request/Response</h3>
+                    <div class="mermaid">
+                        sequenceDiagram
+                            participant U as Usuario
+                            participant B as Browser
+                            participant D as Django
+                            participant DB as Database
+                            participant E as Email Service
+                            
+                            U->>B: Ingresa URL
+                            B->>D: HTTP Request
+                            D->>D: URL Routing
+                            D->>D: Middleware Processing
+                            D->>D: View Function
+                            D->>DB: Query Data
+                            DB-->>D: Return Data
+                            D->>D: Process Business Logic
+                            alt Requiere Email
+                                D->>E: Send Email
+                                E-->>D: Email Sent
+                            end
+                            D->>D: Render Template
+                            D-->>B: HTTP Response
+                            B-->>U: Display Page
+                    </div>
+                </div>
+
+                <div class="diagram-card">
+                    <h3>3. Capas de Seguridad</h3>
+                    <div class="mermaid">
+                        graph TD
+                            A[Request del Usuario] --> B[HTTPS/SSL]
+                            B --> C[Django Middleware]
+                            C --> D[CSRF Token Validation]
+                            D --> E[Session Management]
+                            E --> F[Authentication Backend]
+                            F --> G{¿Autenticado?}
+                            G -->|No| H[Redirect to Login]
+                            G -->|Sí| I{¿2FA Requerido?}
+                            I -->|Sí| J[Verificar Código 2FA]
+                            J --> K{¿Código Válido?}
+                            K -->|No| L[Registrar Intento Fallido]
+                            L --> M[Bloquear tras 3 intentos]
+                            K -->|Sí| N[Acceso Permitido]
+                            I -->|No| N
+                            N --> O[View Processing]
+                            O --> P[Response]
+                            
+                            style A fill:#0077b6,stroke:#00b4d8,color:#fff
+                            style F fill:#00b4d8,stroke:#0077b6,color:#fff
+                            style J fill:#00ddff,stroke:#0077b6,color:#000
+                            style P fill:#90e0ef,stroke:#0077b6,color:#000
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECCIÓN: RESUMEN -->
+            <section id="resumen" class="section">
+                <h2 class="section-title">📋 Resumen de Funcionalidades</h2>
+                
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <h3>🔐 Autenticación</h3>
+                        <ul>
+                            <li>Registro con verificación de email</li>
+                            <li>Login con email (no username)</li>
+                            <li>Autenticación de dos factores (2FA)</li>
+                            <li>Códigos de respaldo 2FA</li>
+                            <li>Recuperación de contraseña</li>
+                            <li>Sesiones seguras</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <h3>📈 Dashboard</h3>
+                        <ul>
+                            <li>Visualización de capital total</li>
+                            <li>Productos contratados</li>
+                            <li>Gráficas de rendimiento</li>
+                            <li>Estadísticas de inversión</li>
+                            <li>Historial de resultados</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <h3>💼 Productos</h3>
+                        <ul>
+                            <li>M.P.T MarketProThief</li>
+                            <li>GoldenRoad</li>
+                            <li>MultiMarkets</li>
+                            <li>Contratación de productos</li>
+                            <li>Cancelación de contratos</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <h3>📊 Mercados</h3>
+                        <ul>
+                            <li>XAUUSD (Oro)</li>
+                            <li>NASDAQ</li>
+                            <li>S&P 500</li>
+                            <li>Seguimiento en tiempo real</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <h3>👤 Perfil</h3>
+                        <ul>
+                            <li>Actualización de datos</li>
+                            <li>Cambio de contraseña</li>
+                            <li>Gestión de 2FA</li>
+                            <li>Historial de sesiones</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <h3>🔒 Seguridad</h3>
+                        <ul>
+                            <li>Tokens con expiración</li>
+                            <li>Encriptación de contraseñas</li>
+                            <li>Registro de intentos fallidos</li>
+                            <li>Protección CSRF</li>
+                            <li>Auditoría de sesiones</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="tech-stack">
+                    <h3>🛠️ Stack Tecnológico</h3>
+                    <div class="tech-grid">
+                        <div class="tech-item">
+                            <strong>Backend:</strong> Django 4.2.26
+                        </div>
+                        <div class="tech-item">
+                            <strong>Database:</strong> SQLite / PostgreSQL
+                        </div>
+                        <div class="tech-item">
+                            <strong>Frontend:</strong> HTML5, CSS3, JavaScript
+                        </div>
+                        <div class="tech-item">
+                            <strong>Charts:</strong> Chart.js
+                        </div>
+                        <div class="tech-item">
+                            <strong>2FA:</strong> PyOTP + QRCode
+                        </div>
+                        <div class="tech-item">
+                            <strong>Email:</strong> Django Email Backend
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p>📊 Proyecto Kairos - Diagramas de Flujo Completos</p>
+            <p>Generado para análisis y documentación del sistema</p>
+            <p>© 2025 - Todos los derechos reservados</p>
+        </footer>
+    </div>
+
+    <script type="module" src="./script.js"></script>
+</body>
+
+</html>

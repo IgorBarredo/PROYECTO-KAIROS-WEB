@@ -894,6 +894,14 @@ def contacto_view(request):
         return redirect('appKairos:index')
 
 
+def questions_view(request):
+    """
+    Vista de preguntas frecuentes (FAQ)
+    Conecta con: questions_en.html
+    """
+    return render(request, 'questions_en.html')
+
+
 # ============================================================================
 # FUNCIONES AUXILIARES
 # ============================================================================

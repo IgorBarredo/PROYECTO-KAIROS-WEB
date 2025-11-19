@@ -1,223 +1,211 @@
+{% extends 'base.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Contract Product - Proyecto Kairos</title>
-  <link rel="stylesheet" href="{% static 'css/contratar.css' %}">
-  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;500;700&display=swap" rel="stylesheet">
-</head>
-<body>
 
-  <!-- Header -->
-  <header>
-    <div class="logo">P.K. Proyecto Kairos</div>
-    <nav>
-      <a href="{% url 'appKairos:dashboard' %}" class="linked">Dashboard</a>
-      <a href="{% url 'appKairos:perfil' %}" class="linked">Profile</a>
-      <a href="{% url 'appKairos:logout' %}" class="auth-btn logout-btn">Logout</a>
-    </nav>
-  </header>
+{% block title %}Contract Product - Proyecto Kairos{% endblock %}
 
-  <!-- Main Content -->
-  <main class="contratar-main">
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/contratar.css' %}">
+{% endblock %}
+
+{% block content %}
+<!-- Breadcrumbs -->
+<nav class="breadcrumb">
+  <a href="{% url 'appKairos:dashboard' %}">Dashboard</a> 
+  <span>›</span>
+  <span class="current">Contract Product</span>
+</nav>
+
+<!-- Main Content -->
+<main class="contratar-main">
+  
+  <div class="contratar-container">
     
-    <div class="contratar-container">
-      
-      <div class="back-link">
-        <a href="{% url 'appKairos:dashboard' %}">← Back to Dashboard</a>
+    <div class="back-link">
+      <a href="{% url 'appKairos:dashboard' %}">← Back to Dashboard</a>
       </div>
 
-      <h1>Contract Financial Product</h1>
+    <h1>Contract Financial Product</h1>
+    
+    <div class="contratar-grid">
       
-      <div class="contratar-grid">
+      <!-- Product Information -->
+      <section class="product-info-section">
+        <div class="product-header">
+          <h2>{{ producto.nombre }}</h2>
+          <span class="product-badge">{{ producto.codigo }}</span>
+        </div>
         
-        <!-- Product Information -->
-        <section class="product-info-section">
-          <div class="product-header">
-            <h2>{{ producto.nombre }}</h2>
-            <span class="product-badge">{{ producto.codigo }}</span>
-          </div>
-          
-          <div class="product-description">
-            <p>{{ producto.descripcion }}</p>
-          </div>
+        <div class="product-description">
+          <p>{{ producto.descripcion }}</p>
+        </div>
 
-          <div class="product-details">
-            <h3>Markets</h3>
-            <div class="markets-list">
-              {% for mercado in producto.mercados.all %}
-                <span class="market-badge">{{ mercado.codigo }}</span>
-              {% endfor %}
-            </div>
+        <div class="product-details">
+          <h3>Markets</h3>
+          <div class="markets-list">
+            {% for mercado in producto.mercados.all %}
+              <span class="market-badge">{{ mercado.codigo }}</span>
+            {% endfor %}
           </div>
+        </div>
 
-          <div class="product-stats">
-            <div class="stat-item">
-              <span class="stat-icon">📊</span>
-              <div>
-                <p class="stat-label">Status</p>
-                <p class="stat-value">{{ producto.activo|yesno:"Active,Inactive" }}</p>
-              </div>
-            </div>
-            <div class="stat-item">
-              <span class="stat-icon">📅</span>
-              <div>
-                <p class="stat-label">Created</p>
-                <p class="stat-value">{{ producto.fecha_creacion|date:"M d, Y" }}</p>
-              </div>
-            </div>
-          </div>
-
-          <div class="risk-warning">
-            <span class="warning-icon">⚠️</span>
+        <div class="product-stats">
+          <div class="stat-item">
+            <span class="stat-icon">📊</span>
             <div>
-              <strong>Risk Warning:</strong> Trading financial products involves significant risk. You may lose all your invested capital. Only invest money you can afford to lose.
+              <p class="stat-label">Status</p>
+              <p class="stat-value">{{ producto.activo|yesno:"Active,Inactive" }}</p>
             </div>
           </div>
-
-        </section>
-
-        <!-- Contract Form -->
-        <section class="contract-form-section">
-          <div class="form-header">
-            <h2>Investment Details</h2>
-            <span class="form-icon">💰</span>
+          <div class="stat-item">
+            <span class="stat-icon">📅</span>
+            <div>
+              <p class="stat-label">Created</p>
+              <p class="stat-value">{{ producto.fecha_creacion|date:"M d, Y" }}</p>
+            </div>
           </div>
+        </div>
+
+        <div class="risk-warning">
+          <span class="warning-icon">⚠️</span>
+          <div>
+            <strong>Risk Warning:</strong> Trading financial products involves significant risk. You may lose all your invested capital. Only invest money you can afford to lose.
+          </div>
+        </div>
+
+      </section>
+
+      <!-- Contract Form -->
+      <section class="contract-form-section">
+        <div class="form-header">
+          <h2>Investment Details</h2>
+          <span class="form-icon">💰</span>
+        </div>
+        
+        <form method="POST" class="contratar-form" id="contractForm">
+          {% csrf_token %}
           
-          <form method="POST" class="contratar-form" id="contractForm">
-            {% csrf_token %}
-            
-            <input type="hidden" name="producto" value="{{ producto.id }}">
+          <input type="hidden" name="producto" value="{{ producto.id }}">
 
-            <div class="form-group">
-              <label for="monto_invertido">Investment Amount (€)</label>
-              <div class="amount-input-wrapper">
-                <span class="currency-symbol">€</span>
-                <input 
-                  type="number" 
-                  id="monto_invertido" 
-                  name="monto_invertido"
-                  min="100"
-                  step="0.01"
-                  placeholder="1000.00"
-                  required
-                >
-              </div>
-              <span class="help-text">Minimum investment: € 100.00</span>
-              {% if form.monto_invertido.errors %}
-                <span class="error-message">{{ form.monto_invertido.errors.0 }}</span>
-              {% endif %}
-            </div>
-
-            <div class="investment-summary">
-              <h3>Investment Summary</h3>
-              <div class="summary-row">
-                <span>Product:</span>
-                <span class="summary-value">{{ producto.nombre }}</span>
-              </div>
-              <div class="summary-row">
-                <span>Investment Amount:</span>
-                <span class="summary-value" id="summaryAmount">€ 0.00</span>
-              </div>
-              <div class="summary-row total">
-                <span>Total:</span>
-                <span class="summary-value" id="summaryTotal">€ 0.00</span>
-              </div>
-            </div>
-
-            <div class="form-check">
+          <div class="form-group">
+            <label for="monto_invertido">Investment Amount (€)</label>
+            <div class="amount-input-wrapper">
+              <span class="currency-symbol">€</span>
               <input 
-                type="checkbox" 
-                id="acepto_riesgos" 
-                name="acepto_riesgos" 
+                type="number" 
+                id="monto_invertido" 
+                name="monto_invertido"
+                min="100"
+                step="0.01"
+                placeholder="1000.00"
                 required
               >
-              <label for="acepto_riesgos">
-                I understand and accept the investment risks. I have read and agree to the <a href="#" target="_blank">terms and conditions</a>.
-              </label>
             </div>
+            <span class="help-text">Minimum investment: € 100.00</span>
+            {% if form.monto_invertido.errors %}
+              <span class="error-message">{{ form.monto_invertido.errors.0 }}</span>
+            {% endif %}
+          </div>
 
-            <div class="form-actions">
-              <button type="button" onclick="window.history.back()" class="btn-secondary">Cancel</button>
-              <button type="submit" class="btn-primary" id="submitBtn">Contract Product</button>
+          <div class="investment-summary">
+            <h3>Investment Summary</h3>
+            <div class="summary-row">
+              <span>Product:</span>
+              <span class="summary-value">{{ producto.nombre }}</span>
             </div>
+            <div class="summary-row">
+              <span>Investment Amount:</span>
+              <span class="summary-value" id="summaryAmount">€ 0.00</span>
+            </div>
+            <div class="summary-row total">
+              <span>Total:</span>
+              <span class="summary-value" id="summaryTotal">€ 0.00</span>
+            </div>
+          </div>
 
-          </form>
+          <div class="form-check">
+            <input 
+              type="checkbox" 
+              id="acepto_riesgos" 
+              name="acepto_riesgos" 
+              required
+            >
+            <label for="acepto_riesgos">
+              I understand and accept the investment risks. I have read and agree to the <a href="#" target="_blank">terms and conditions</a>.
+            </label>
+          </div>
 
-        </section>
+          <div class="form-actions">
+            <button type="button" onclick="window.history.back()" class="btn-secondary">Cancel</button>
+            <button type="submit" class="btn-primary" id="submitBtn">Contract Product</button>
+          </div>
 
-      </div>
+        </form>
+
+      </section>
 
     </div>
 
-  </main>
+  </div>
 
-  <!-- Footer -->
-  <footer>
-    <p>© 2025 P.K. Proyecto Kairos. All rights reserved.</p>
-  </footer>
+</main>
 
-  <script>
-    // Actualizar resumen en tiempo real
-    const montoInput = document.getElementById('monto_invertido');
-    const summaryAmount = document.getElementById('summaryAmount');
-    const summaryTotal = document.getElementById('summaryTotal');
-    const submitBtn = document.getElementById('submitBtn');
+<script>
+  // Actualizar resumen en tiempo real
+  const montoInput = document.getElementById('monto_invertido');
+  const summaryAmount = document.getElementById('summaryAmount');
+  const summaryTotal = document.getElementById('summaryTotal');
+  const submitBtn = document.getElementById('submitBtn');
 
-    montoInput.addEventListener('input', function() {
-      const amount = parseFloat(this.value) || 0;
-      const formattedAmount = amount.toLocaleString('es-ES', {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2
-      });
-      
-      summaryAmount.textContent = `€ ${formattedAmount}`;
-      summaryTotal.textContent = `€ ${formattedAmount}`;
-
-      // Validar monto mínimo
-      if (amount < 100 && amount > 0) {
-        this.setCustomValidity('Minimum investment is € 100.00');
-        submitBtn.disabled = true;
-      } else {
-        this.setCustomValidity('');
-        submitBtn.disabled = false;
-      }
+  montoInput.addEventListener('input', function() {
+    const amount = parseFloat(this.value) || 0;
+    const formattedAmount = amount.toLocaleString('es-ES', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
     });
+    
+    summaryAmount.textContent = `€ ${formattedAmount}`;
+    summaryTotal.textContent = `€ ${formattedAmount}`;
 
-    // Validar formulario antes de enviar
-    document.getElementById('contractForm').addEventListener('submit', function(e) {
-      const amount = parseFloat(montoInput.value);
-      const acceptRisks = document.getElementById('acepto_riesgos').checked;
+    // Validar monto mínimo
+    if (amount < 100 && amount > 0) {
+      this.setCustomValidity('Minimum investment is € 100.00');
+      submitBtn.disabled = true;
+    } else {
+      this.setCustomValidity('');
+      submitBtn.disabled = false;
+    }
+  });
 
-      if (amount < 100) {
-        e.preventDefault();
-        alert('Minimum investment amount is € 100.00');
-        return false;
-      }
+  // Validar formulario antes de enviar
+  document.getElementById('contractForm').addEventListener('submit', function(e) {
+    const amount = parseFloat(montoInput.value);
+    const acceptRisks = document.getElementById('acepto_riesgos').checked;
 
-      if (!acceptRisks) {
-        e.preventDefault();
-        alert('You must accept the investment risks to continue.');
-        return false;
-      }
+    if (amount < 100) {
+      e.preventDefault();
+      alert('Minimum investment amount is € 100.00');
+      return false;
+    }
 
-      // Confirmar antes de enviar
-      if (!confirm(`Are you sure you want to invest € ${amount.toFixed(2)} in ${producto.nombre}?`)) {
-        e.preventDefault();
-        return false;
-      }
-    });
+    if (!acceptRisks) {
+      e.preventDefault();
+      alert('You must accept the investment risks to continue.');
+      return false;
+    }
 
-    // Formato de moneda al salir del input
-    montoInput.addEventListener('blur', function() {
-      if (this.value) {
-        const amount = parseFloat(this.value);
-        this.value = amount.toFixed(2);
-      }
-    });
-  </script>
+    // Confirmar antes de enviar
+    if (!confirm(`Are you sure you want to invest € ${amount.toFixed(2)} in ${producto.nombre}?`)) {
+      e.preventDefault();
+      return false;
+    }
+  });
 
-</body>
-</html>
+  // Formato de moneda al salir del input
+  montoInput.addEventListener('blur', function() {
+    if (this.value) {
+      const amount = parseFloat(this.value);
+      this.value = amount.toFixed(2);
+    }
+  });
+</script>
+{% endblock %}

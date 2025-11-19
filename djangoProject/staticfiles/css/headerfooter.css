@@ -1,10 +1,11 @@
-/* Encabezado */
+/* Header Styles */
 header {
   font-family: 'Space Grotesk', sans-serif;
   background: linear-gradient(135deg, #0077b6 0%, #00b4d8 100%);
   display: flex;
   justify-content: space-between;
   align-items: center;
+  padding: 11px 40px;
   color: whitesmoke;
   text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.4);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
@@ -13,6 +14,88 @@ header {
   z-index: 1000;
 }
 
+/* Logo */
+.logo {
+  font-size: 20px;
+  font-weight: 700;
+  color: white;
+  text-decoration: none;
+}
+
+/* Navigation */
+nav {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+/* Navigation Links */
+.linked {
+  color: white;
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 16px;
+  padding: 8px 16px;
+  border-radius: 6px;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.linked:hover {
+  background: rgba(255, 255, 255, 0.1);
+  transform: translateY(-2px);
+}
+
+.linked::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 50%;
+  width: 0;
+  height: 2px;
+  background: white;
+  transition: all 0.3s ease;
+  transform: translateX(-50%);
+}
+
+.linked:hover::after {
+  width: 80%;
+}
+
+/* Auth Buttons */
+.auth-btn {
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  font-size: 14px;
+  border: 2px solid transparent;
+}
+
+.login-btn {
+  background: rgba(255, 255, 255, 0.15);
+  color: white;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.login-btn:hover {
+  background: rgba(255, 255, 255, 0.25);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(255, 255, 255, 0.2);
+}
+
+.register-btn {
+  background: white;
+  color: #0077b6;
+  font-weight: 700;
+}
+
+.register-btn:hover {
+  background: #f8f9fa;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(255, 255, 255, 0.3);
+}
 
 /* Footer */
 footer {
@@ -24,4 +107,39 @@ footer {
   margin-top: 60px;
   border-top: 1px solid #333;
   text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.4);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  header {
+    padding: 15px 20px;
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  nav {
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  
+  .linked {
+    font-size: 14px;
+    padding: 6px 12px;
+  }
+  
+  .auth-btn {
+    padding: 8px 16px;
+    font-size: 13px;
+  }
+}
+
+/* Active State for Current Page */
+.linked.active {
+  background: rgba(255, 255, 255, 0.2);
+  font-weight: 600;
+}
+
+.linked.active::after {
+  width: 80%;
 }

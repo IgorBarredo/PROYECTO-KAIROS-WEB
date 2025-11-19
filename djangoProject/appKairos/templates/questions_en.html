@@ -1,0 +1,210 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Frequently Asked Questions - Proyecto Kairos{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/questions.css' %}">
+<link rel="stylesheet" href="{% static 'css/styles.css' %}">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600&family=Outfit:wght@300;500&display=swap" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+<!-- Header with Consistent Navigation -->
+<header>
+  <div class="logo">P.K. Proyecto Kairos</div>
+  <nav>
+    <a href="{% url 'appKairos:index' %}" class="linked">Home</a>
+    {% if user.is_authenticated %}
+      <a href="{% url 'appKairos:dashboard' %}" class="auth-btn login-btn">Dashboard</a>
+      <a href="{% url 'appKairos:logout' %}" class="auth-btn register-btn">Logout</a>
+    {% else %}
+      <a href="{% url 'appKairos:login' %}" class="auth-btn login-btn">Login</a>
+      <a href="{% url 'appKairos:register' %}" class="auth-btn register-btn">Register</a>
+    {% endif %}
+  </nav>
+</header>
+
+<!-- Main Content -->
+<main class="questions-main">
+  
+  <div class="questions-container">
+    
+    <h1>Frequently Asked Questions</h1>
+    <p class="intro-text">Find answers to the most common questions about our services and products.</p>
+    
+    <div class="faq-grid">
+      
+      <!-- Question 1: Where is my money stored? -->
+      <div class="faq-card">
+        <div class="faq-icon">💰</div>
+        <h2>Where is my money stored?</h2>
+        <div class="faq-content">
+          <p>Your capital is <strong>never transferred to us</strong>. It remains securely in your own MT5 (MetaTrader 5) trading account with your chosen broker.</p>
+          
+          <p>Here's how it works:</p>
+          <ul>
+            <li><strong>Your Account:</strong> You maintain full ownership and control of your trading account at all times.</li>
+            <li><strong>Our Products:</strong> Our MT5 Expert Advisors (EAs) are software tools that execute trades automatically based on our strategies.</li>
+            <li><strong>Connection:</strong> You connect our products to your MT5 account, allowing them to place trades on your behalf.</li>
+            <li><strong>Your Control:</strong> You can disconnect our products at any time, and you always have access to withdraw your funds directly from your broker.</li>
+          </ul>
+          
+          <p class="highlight">We never have access to withdraw or transfer your money. Your funds stay with your regulated broker.</p>
+        </div>
+      </div>
+
+      <!-- Question 2: Can you take my money? -->
+      <div class="faq-card">
+        <div class="faq-icon">🔒</div>
+        <h2>Can you take my money?</h2>
+        <div class="faq-content">
+          <p><strong>No, we cannot access your funds.</strong></p>
+          
+          <p>Our business model is based on providing trading software (Expert Advisors) that you install on your own MT5 platform. We do not have:</p>
+          <ul>
+            <li>Access to your broker account credentials</li>
+            <li>Ability to withdraw funds from your account</li>
+            <li>Control over your capital</li>
+            <li>Permission to transfer money</li>
+          </ul>
+          
+          <p>You decide to use our MT5 products through your bank or broker. The relationship is between you and your financial institution. We simply provide the trading tools and strategies.</p>
+          
+          <p class="highlight">Your security is paramount. We operate transparently, and your money always remains under your control with your regulated broker.</p>
+        </div>
+      </div>
+
+      <!-- Question 3: Tax and Regulatory Questions -->
+      <div class="faq-card">
+        <div class="faq-icon">📋</div>
+        <h2>What about taxes and regulations?</h2>
+        <div class="faq-content">
+          <p>Tax obligations and regulatory compliance vary by country and individual circumstances. We recommend:</p>
+          
+          <ul>
+            <li><strong>Consult a Tax Professional:</strong> Always speak with a qualified tax advisor or accountant in your jurisdiction about your trading profits and obligations.</li>
+            <li><strong>Understand Local Regulations:</strong> Financial regulations differ by country. Ensure you're compliant with your local laws regarding trading and investments.</li>
+            <li><strong>Keep Records:</strong> Maintain detailed records of all your trading activities for tax reporting purposes.</li>
+            <li><strong>Broker Compliance:</strong> Choose a regulated broker that complies with your country's financial regulations.</li>
+          </ul>
+          
+          <p><strong>Useful Resources:</strong></p>
+          <ul>
+            <li>Your country's tax authority website</li>
+            <li>Financial regulatory body in your jurisdiction</li>
+            <li>Licensed financial advisors</li>
+            <li>Your broker's compliance department</li>
+          </ul>
+          
+          <p class="highlight">We are not tax or legal advisors. Always seek professional guidance for your specific situation.</p>
+        </div>
+      </div>
+
+      <!-- Question 4: How do I contact you? -->
+      <div class="faq-card">
+        <div class="faq-icon">📧</div>
+        <h2>How can I contact you?</h2>
+        <div class="faq-content">
+          <p>We're here to help! You can reach our team through multiple channels:</p>
+          
+          <ul>
+            <li><strong>Contact Form:</strong> Visit our <a href="{% url 'appKairos:index' %}#contacto">Contact Team</a> page and fill out the form. We typically respond within 24-48 hours.</li>
+            <li><strong>Email Support:</strong> Send us an email with your questions or concerns.</li>
+            <li><strong>Social Media:</strong> Follow us and send direct messages on our social platforms.</li>
+            <li><strong>Newsletter:</strong> Subscribe to stay updated with the latest news and announcements.</li>
+          </ul>
+          
+          <p><strong>What to include in your message:</strong></p>
+          <ul>
+            <li>Your account username (if applicable)</li>
+            <li>Clear description of your question or issue</li>
+            <li>Any relevant screenshots or error messages</li>
+            <li>Your preferred contact method</li>
+          </ul>
+          
+          <p class="highlight">Our support team is dedicated to providing timely and helpful responses to all inquiries.</p>
+        </div>
+      </div>
+
+      <!-- Question 5: What about risk? -->
+      <div class="faq-card">
+        <div class="faq-icon">⚠️</div>
+        <h2>What are the risks involved?</h2>
+        <div class="faq-content">
+          <p><strong>Important Risk Disclosure:</strong></p>
+          
+          <p>Trading in financial markets carries inherent risks. While we have a proven track record, you should understand:</p>
+          
+          <ul>
+            <li><strong>Past Performance:</strong> Historical results do not guarantee future returns. Market conditions change, and past profitability doesn't ensure future success.</li>
+            <li><strong>Capital Risk:</strong> You can lose some or all of your invested capital. Never invest money you cannot afford to lose.</li>
+            <li><strong>Market Volatility:</strong> Financial markets can be unpredictable and volatile, leading to rapid gains or losses.</li>
+            <li><strong>No Guarantees:</strong> No trading system or strategy can guarantee profits or eliminate risk entirely.</li>
+          </ul>
+          
+          <p><strong>Our Commitment:</strong></p>
+          <ul>
+            <li>We maintain a transparent <strong>track record</strong> of our products' performance</li>
+            <li>We continuously work to <strong>improve our strategies</strong> and adapt to market conditions</li>
+            <li>Our <strong>reputation</strong> is on the line with every decision we make</li>
+            <li>We provide <strong>risk management tools</strong> and recommendations</li>
+          </ul>
+          
+          <p class="highlight">We take our responsibility seriously. Every trading decision impacts our reputation, and we're committed to maintaining the trust our clients place in us.</p>
+          
+          <p><strong>Risk Management Tips:</strong></p>
+          <ul>
+            <li>Start with capital you can afford to risk</li>
+            <li>Diversify your investments</li>
+            <li>Use appropriate position sizing</li>
+            <li>Monitor your account regularly</li>
+            <li>Understand the products you're using</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Question 6: How do your MT5 products work? -->
+      <div class="faq-card">
+        <div class="faq-icon">⚙️</div>
+        <h2>How do your MT5 products work?</h2>
+        <div class="faq-content">
+          <p>Our products are Expert Advisors (EAs) designed for the MetaTrader 5 platform:</p>
+          
+          <ul>
+            <li><strong>Automated Trading:</strong> Our EAs execute trades automatically based on sophisticated algorithms and market analysis.</li>
+            <li><strong>24/7 Operation:</strong> Once installed, they can monitor markets and execute trades around the clock.</li>
+            <li><strong>Multiple Markets:</strong> Different products focus on various markets like Gold (XAUUSD), Nasdaq, and SP500.</li>
+            <li><strong>Risk Management:</strong> Built-in risk management features help protect your capital.</li>
+          </ul>
+          
+          <p><strong>Getting Started:</strong></p>
+          <ol>
+            <li>Open an MT5 account with a compatible broker</li>
+            <li>Subscribe to one of our products</li>
+            <li>Follow our setup instructions</li>
+            <li>Monitor performance through your dashboard</li>
+          </ol>
+          
+          <p class="highlight">Our team provides full support during setup and ongoing operation of our products.</p>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Additional Help Section -->
+    <div class="help-section">
+      <h2>Still have questions?</h2>
+      <p>Can't find the answer you're looking for? Our team is ready to help.</p>
+      <a href="{% url 'appKairos:index' %}#contacto" class="btn-primary">Contact Our Team</a>
+    </div>
+
+  </div>
+
+</main>
+
+<!-- Footer -->
+<footer>
+  <p>© 2025 P.K. Proyecto Kairos. All rights reserved.</p>
+</footer>
+{% endblock %}

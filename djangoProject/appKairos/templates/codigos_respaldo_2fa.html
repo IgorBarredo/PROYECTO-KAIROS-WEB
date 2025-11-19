@@ -7,81 +7,161 @@
 <link rel="stylesheet" href="{% static 'css/auth2fa.css' %}">
 <style>
 .backup-codes-container {
-    max-width: 700px;
-    margin: 50px auto;
-    padding: 30px;
+    max-width: 600px;
+    margin: 40px auto;
+    padding: 40px;
     background: white;
-    border-radius: 10px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+}
+
+.backup-codes-header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.backup-codes-header h2 {
+    color: #2c3e50;
+    margin-bottom: 10px;
+    font-weight: 600;
+}
+
+.backup-codes-header p {
+    color: #7f8c8d;
+    font-size: 16px;
 }
 
 .warning-box {
-    background-color: #fff3cd;
-    border-left: 4px solid #ffc107;
+    background: linear-gradient(135deg, #fff9e6, #fff3cd);
+    border: 1px solid #ffeaa7;
+    border-radius: 8px;
     padding: 20px;
     margin-bottom: 30px;
-    border-radius: 4px;
+    text-align: center;
 }
 
 .warning-box h3 {
-    color: #856404;
-    margin-top: 0;
+    color: #e67e22;
+    margin: 0 0 10px 0;
+    font-size: 18px;
+}
+
+.warning-box p {
+    color: #d35400;
+    margin: 5px 0;
+    font-size: 14px;
 }
 
 .codes-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 15px;
-    margin: 30px 0;
+    gap: 12px;
+    margin: 25px 0;
 }
 
 .code-item {
-    background: #f8f9fa;
+    background: linear-gradient(135deg, #f8f9fa, #e9ecef);
     padding: 15px;
     border-radius: 8px;
     font-family: 'Courier New', monospace;
-    font-size: 18px;
-    font-weight: bold;
+    font-size: 16px;
+    font-weight: 600;
     text-align: center;
-    letter-spacing: 2px;
-    border: 2px solid #dee2e6;
+    letter-spacing: 1px;
+    border: 1px solid #dee2e6;
+    color: #2c3e50;
+    transition: all 0.2s ease;
+}
+
+.code-item:hover {
+    background: linear-gradient(135deg, #e9ecef, #dee2e6);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 }
 
 .instructions {
-    background-color: #e7f3ff;
-    border-left: 4px solid #007bff;
+    background: linear-gradient(135deg, #e8f4fd, #d1ecf1);
+    border: 1px solid #bee5eb;
+    border-radius: 8px;
     padding: 20px;
-    margin: 20px 0;
-    border-radius: 4px;
+    margin: 25px 0;
 }
 
 .instructions h4 {
-    margin-top: 0;
-    color: #004085;
+    color: #0c5460;
+    margin: 0 0 15px 0;
+    font-size: 16px;
+    font-weight: 600;
 }
 
 .instructions ul {
-    margin: 10px 0;
+    margin: 0;
     padding-left: 20px;
 }
 
 .instructions li {
+    color: #0c5460;
     margin: 8px 0;
+    font-size: 14px;
+    line-height: 1.4;
 }
 
 .action-buttons {
     display: flex;
-    gap: 15px;
+    gap: 12px;
     margin-top: 30px;
 }
 
 .btn-print {
-    background-color: #6c757d;
+    background: linear-gradient(135deg, #6c757d, #5a6268);
     color: white;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 6px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    flex: 1;
 }
 
 .btn-print:hover {
-    background-color: #5a6268;
+    background: linear-gradient(135deg, #5a6268, #495057);
+    transform: translateY(-1px);
+}
+
+.btn-copy {
+    background: linear-gradient(135deg, #17a2b8, #138496);
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 6px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    flex: 1;
+}
+
+.btn-copy:hover {
+    background: linear-gradient(135deg, #138496, #117a8b);
+    transform: translateY(-1px);
+}
+
+.btn-continue {
+    background: linear-gradient(135deg, #28a745, #20c997);
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 6px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    flex: 2;
+}
+
+.btn-continue:hover {
+    background: linear-gradient(135deg, #20c997, #1e9e8a);
+    transform: translateY(-1px);
+}
+
+.btn-icon {
+    margin-right: 8px;
 }
 
 @media print {
@@ -89,16 +169,38 @@
         display: none;
     }
 }
+
+@media (max-width: 768px) {
+    .backup-codes-container {
+        margin: 20px;
+        padding: 25px;
+    }
+    
+    .codes-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .action-buttons {
+        flex-direction: column;
+    }
+    
+    .btn-continue {
+        flex: 1;
+    }
+}
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="backup-codes-container">
-    <h2>Códigos de Respaldo 2FA</h2>
+    <div class="backup-codes-header">
+        <h2>Códigos de Respaldo 2FA</h2>
+        <p>Guarda estos códigos en un lugar seguro</p>
+    </div>
     
     <div class="warning-box">
         <h3>⚠️ ¡IMPORTANTE!</h3>
-        <p>Estos códigos de respaldo te permitirán acceder a tu cuenta si pierdes acceso a tu aplicación de autenticación.</p>
+        <p>Estos códigos te permitirán acceder a tu cuenta si pierdes acceso a tu aplicación de autenticación.</p>
         <p><strong>Guárdalos en un lugar seguro. No podrás verlos nuevamente.</strong></p>
     </div>
 
@@ -120,25 +222,25 @@
     </div>
 
     <div class="action-buttons">
-        <button onclick="window.print()" class="btn btn-print">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16" style="margin-right: 5px;">
+        <button onclick="window.print()" class="btn-print">
+            <svg class="btn-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
                 <path d="M5 1a2 2 0 0 0-2 2v1h10V3a2 2 0 0 0-2-2H5zm6 8H5a1 1 0 0 0-1 1v3a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1v-3a1 1 0 0 0-1-1z"/>
                 <path d="M0 7a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2h-1v-2a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v2H2a2 2 0 0 1-2-2V7zm2.5 1a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1z"/>
             </svg>
-            Imprimir Códigos
+            Imprimir
         </button>
         
-        <button onclick="copiarCodigos()" class="btn btn-secondary">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16" style="margin-right: 5px;">
+        <button onclick="copiarCodigos()" class="btn-copy">
+            <svg class="btn-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
                 <path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1v-1z"/>
                 <path d="M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5h3zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3z"/>
             </svg>
-            Copiar al Portapapeles
+            Copiar
         </button>
         
-        <form method="post" style="flex: 1;">
+        <form method="post" style="display: contents;">
             {% csrf_token %}
-            <button type="submit" class="btn btn-primary" style="width: 100%;">
+            <button type="submit" class="btn-continue">
                 He Guardado los Códigos - Continuar
             </button>
         </form>
@@ -151,9 +253,10 @@ function copiarCodigos() {
     const texto = 'Códigos de Respaldo 2FA - Proyecto Kairos\n\n' + codigos.join('\n');
     
     navigator.clipboard.writeText(texto).then(function() {
-        alert('Códigos copiados al portapapeles');
+        alert('✅ Códigos copiados al portapapeles');
     }, function(err) {
         console.error('Error al copiar: ', err);
+        alert('❌ Error al copiar los códigos');
     });
 }
 </script>

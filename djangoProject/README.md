@@ -70,8 +70,11 @@ python manage.py load_initial_data
 ```bash
 python manage.py createsuperuser
 ```
+### 7. Recuerda ejecutar python manage.py collectstatic 
+si estás usando archivos estáticos en producción para que 
+los cambios se reflejen.
 
-### 7. Ejecutar servidor
+### 8. Ejecutar servidor
 
 ```bash
 python manage.py runserver

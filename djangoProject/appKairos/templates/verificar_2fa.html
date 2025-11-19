@@ -5,6 +5,87 @@
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/auth2fa.css' %}">
+<style>
+.attempts-warning {
+    background-color: #fff3cd;
+    border-left: 4px solid #ffc107;
+    padding: 15px;
+    margin-bottom: 20px;
+    border-radius: 4px;
+}
+
+.attempts-warning p {
+    margin: 0;
+    color: #856404;
+}
+
+.separator {
+    text-align: center;
+    margin: 20px 0;
+    position: relative;
+}
+
+.separator::before,
+.separator::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    width: 45%;
+    height: 1px;
+    background-color: #dee2e6;
+}
+
+.separator::before {
+    left: 0;
+}
+
+.separator::after {
+    right: 0;
+}
+
+.separator span {
+    background-color: white;
+    padding: 0 15px;
+    color: #6c757d;
+    font-weight: 500;
+}
+
+.info-box {
+    background-color: #e7f3ff;
+    border-left: 4px solid #007bff;
+    padding: 15px;
+    margin-top: 20px;
+    border-radius: 4px;
+}
+
+.info-box h4 {
+    margin-top: 0;
+    color: #004085;
+    font-size: 1em;
+}
+
+.info-box ul {
+    margin: 10px 0 0 0;
+    padding-left: 20px;
+}
+
+.info-box li {
+    margin: 5px 0;
+    font-size: 0.9em;
+    color: #004085;
+}
+
+@media (max-width: 768px) {
+    .auth-container {
+        margin: 20px;
+    }
+    
+    .separator::before,
+    .separator::after {
+        width: 40%;
+    }
+}
+</style>
 {% endblock %}
 
 {% block content %}
@@ -87,75 +168,4 @@
         </div>
     </div>
 </div>
-
-<style>
-.attempts-warning {
-    background-color: #fff3cd;
-    border-left: 4px solid #ffc107;
-    padding: 15px;
-    margin-bottom: 20px;
-    border-radius: 4px;
-}
-
-.attempts-warning p {
-    margin: 0;
-    color: #856404;
-}
-
-.separator {
-    text-align: center;
-    margin: 20px 0;
-    position: relative;
-}
-
-.separator::before,
-.separator::after {
-    content: '';
-    position: absolute;
-    top: 50%;
-    width: 45%;
-    height: 1px;
-    background-color: #dee2e6;
-}
-
-.separator::before {
-    left: 0;
-}
-
-.separator::after {
-    right: 0;
-}
-
-.separator span {
-    background-color: white;
-    padding: 0 15px;
-    color: #6c757d;
-    font-weight: 500;
-}
-
-.info-box {
-    background-color: #e7f3ff;
-    border-left: 4px solid #007bff;
-    padding: 15px;
-    margin-top: 20px;
-    border-radius: 4px;
-}
-
-.info-box h4 {
-    margin-top: 0;
-    color: #004085;
-    font-size: 1em;
-}
-
-.info-box ul {
-    margin: 10px 0 0 0;
-    padding-left: 20px;
-}
-
-.info-box li {
-    margin: 5px 0;
-    font-size: 0.9em;
-    color: #004085;
-}
-</style>
 {% endblock %}

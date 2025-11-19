@@ -10,6 +10,7 @@ urlpatterns = [
     path('connect-mt5/', views.connect_mt5_view, name='connect_mt5'),
     path('newsletter/', views.newsletter_view, name='newsletter'),
     path('contacto/', views.contacto_view, name='contacto'),
+    path('questions/', views.questions_view, name='questions'),
     
     # Autenticación
     path('register/', views.registro_view, name='register'),

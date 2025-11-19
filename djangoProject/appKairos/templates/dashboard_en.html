@@ -5,22 +5,29 @@
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+<link rel="stylesheet" href="{% static 'css/styles.css' %}">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600&family=Outfit:wght@300;500&display=swap" rel="stylesheet">
 {% endblock %}
 
 {% block content %}
+<!-- Header with Consistent Navigation -->
+<header>
+  <div class="logo">P.K. Proyecto Kairos</div>
+  <nav>
+    <a href="{% url 'appKairos:index' %}" class="linked">Home</a>
+    <a href="{% url 'appKairos:perfil' %}" class="linked">Profile</a>
+    {% if user.is_authenticated %}
+      <a href="{% url 'appKairos:logout' %}" class="auth-btn register-btn">Logout</a>
+    {% else %}
+      <a href="{% url 'appKairos:login' %}" class="auth-btn login-btn">Login</a>
+      <a href="{% url 'appKairos:register' %}" class="auth-btn register-btn">Register</a>
+    {% endif %}
+  </nav>
+</header>
+
+<!-- Main Content -->
 <div class="dashboard-container">
   
-  <!-- Header -->
-  <header class="dashboard-header">
-    <div class="logo">P.K. Proyecto Kairos</div>
-    <div class="user-menu">
-      <span class="user-name">Welcome, {{ user.first_name|default:user.username }}</span>
-      <a href="{% url 'appKairos:perfil' %}" class="profile-btn">Profile</a>
-      <a href="{% url 'appKairos:logout' %}" class="logout-btn">Logout</a>
-    </div>
-  </header>
-
   <!-- Main Content -->
   <main class="dashboard-main">
     
@@ -52,12 +59,20 @@
                 <span>{{ mercado.codigo }}</span>
               {% endfor %}
             </div>
+            <div class="product-performance">
+              <span class="performance-label">Performance:</span>
+              <span class="performance-value {% if contrato.ganancia >= 0 %}positive{% else %}negative{% endif %}">
+                {% if contrato.ganancia >= 0 %}+{% endif %}€ {{ contrato.ganancia|floatformat:2 }}
+              </span>
+            </div>
           </div>
           {% endfor %}
         </div>
       {% else %}
-        <p>You haven't contracted any products yet.</p>
-        <a href="{% url 'appKairos:index' %}#productos" class="btn-primary">View Available Products</a>
+        <div class="empty-state">
+          <p>You haven't contracted any products yet.</p>
+          <a href="{% url 'appKairos:index' %}#productos" class="btn-primary">View Available Products</a>
+        </div>
       {% endif %}
     </section>
 
@@ -70,6 +85,20 @@
         <div class="product-card available">
           <h3>{{ producto.nombre }}</h3>
           <p>{{ producto.descripcion|truncatewords:20 }}</p>
+          <div class="product-details">
+            <div class="detail-item">
+              <span class="detail-label">Markets:</span>
+              <div class="markets-list">
+                {% for mercado in producto.mercados.all %}
+                  <span class="market-badge">{{ mercado.codigo }}</span>
+                {% endfor %}
+              </div>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">Minimum Investment:</span>
+              <span class="detail-value">€ 100.00</span>
+            </div>
+          </div>
           <a href="{% url 'appKairos:contratar_producto' producto.id %}" class="btn-secondary">Contract Now</a>
         </div>
         {% endfor %}
@@ -81,7 +110,6 @@
     <section class="actions-section">
       <h2>Quick Actions</h2>
       <div class="actions-grid">
-        <a href="{% url 'appKairos:perfil' %}" class="action-btn">View Profile</a>
         <a href="{% url 'appKairos:connect_mt5' %}" class="action-btn">Connect MT5</a>
         <a href="{% url 'appKairos:index' %}#contacto" class="action-btn">Contact Support</a>
         <a href="{% url 'appKairos:activar_2fa' %}" class="action-btn">Security Settings</a>
