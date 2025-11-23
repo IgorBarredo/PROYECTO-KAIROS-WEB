@@ -4,7 +4,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
+    path('gestion-kairos-secure-security-not-for-all-###666###666/', admin.site.urls),
     path('', include('appKairos.urls')),
 ]
 

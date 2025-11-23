@@ -35,6 +35,7 @@ urlpatterns = [
     
     # Dashboard y perfil
     path('dashboard/', views.dashboard_view, name='dashboard'),
+    path('borrar-historial/', views.borrar_historial_view, name='borrar_historial'), # Nueva ruta
     path('perfil/', views.perfil_view, name='perfil'),
     path('cambiar-password/', views.cambiar_password_view, name='cambiar_password'),
     

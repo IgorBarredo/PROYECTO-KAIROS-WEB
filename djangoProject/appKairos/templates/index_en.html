@@ -10,16 +10,14 @@
 {% endblock %}
 
 {% block content %}
-<!-- Encabezado -->
 <header>
   <div class="logo">P.K. Proyecto Kairos</div>
   <nav>
-    <a href="#graph" class="linked">Results</a>
-    <a href="#productos" class="linked">Products</a>
+    <a href="{% url 'appKairos:index' %}#graph" class="linked">Results</a>
+    <a href="{% url 'appKairos:index' %}#productos" class="linked">Products</a>
     <a href="{% url 'appKairos:how_we_work' %}" class="linked">How we work</a>
     
-    <!-- Dropdown Menu for Contact -->
-    <div class="dropdown">
+    <div id="contactDropdown" class="dropdown">
       <span class="dropbtn linked">Contact</span>
       <div class="dropdown-content">
         <a href="{% url 'appKairos:newsletter' %}" class="linked" target="_blank">Newsletter</a>
@@ -38,18 +36,15 @@
   </nav>
 </header>
 
-<!-- Hero -->
 <section id="inicio" class="hero">
   <h1>DO YOU WANT TO GROW YOUR CAPITAL?</h1>
   <h3>FOLLOW THE INSTRUCTIONS AND CONNECT TO OUR PRODUCTS</h3>
   <a href="{% url 'appKairos:connect_mt5' %}" class="btn">START NOW</a>
 </section>
 
-<!-- Sección Gráfica -->
 <section id="graph" class="grafica">
   <h2>SELECT DIFFERENT PRODUCTS AND COMPARE THEM WITH EACH OTHER AND WITH THE MARKETS</h2>
   
-  <!-- Pestañas de productos -->
   <div class="tabs-container">
     <button class="tab-btn active" data-product="mpt">M.P.T. MarketProThief</button>
     <button class="tab-btn active" data-product="golden">GoldenRoad</button>
@@ -59,7 +54,6 @@
   <canvas id="capitalChart"></canvas>
 </section>
 
-<!-- Sección Productos -->
 <section id="productos" class="productos">
   <h2>FINANCIAL PRODUCTS</h2>
   <div class="productos-container">
@@ -92,7 +86,6 @@
   </div>
 </section>
 
-<!-- Contacto -->
 <section id="contacto" class="contacto">
   <h2>CONTACT OUR TEAM</h2>
   <form method="POST" action="{% url 'appKairos:contacto' %}">
@@ -116,7 +109,6 @@
   </div>
 </section>
 
-<!-- Footer -->
 <footer>
   <p>© 2025 P.K. Proyecto Kairos. All rights reserved.</p>
 </footer>
@@ -124,9 +116,9 @@
 
 {% block extra_js %}
 <script>
+  // --- Gráfica Chart.js ---
   const ctx = document.getElementById('capitalChart');
   
-  // Datos de cada producto
   const productData = {
     mpt: {
       label: 'M.P.T MarketProThief (€)',
@@ -198,7 +190,6 @@
     }
   }
 
-  // Event listeners para las pestañas
   document.querySelectorAll('.tab-btn').forEach(btn => {
     btn.addEventListener('click', function() {
       const product = this.getAttribute('data-product');
@@ -217,9 +208,50 @@
     });
   });
 
-  // Inicializar la gráfica
   if (ctx) {
     updateChart();
   }
+
+  // --- Lógica "Pegajosa" DEFINITIVA para el Menú (3 SEGUNDOS) ---
+  document.addEventListener('DOMContentLoaded', () => {
+      const dropdown = document.getElementById('contactDropdown');
+      
+      if (dropdown) {
+          const dropdownContent = dropdown.querySelector('.dropdown-content');
+          let closeTimer = null;
+
+          // Función para abrir: Borra cualquier temporizador de cierre pendiente
+          const openMenu = () => {
+              if (closeTimer) {
+                  clearTimeout(closeTimer);
+                  closeTimer = null;
+              }
+              dropdownContent.classList.add('show');
+          };
+
+          // Función para cerrar: Inicia la cuenta atrás de 3 segundos
+          const startCloseTimer = () => {
+              if (!closeTimer) {
+                  closeTimer = setTimeout(() => {
+                      dropdownContent.classList.remove('show');
+                      closeTimer = null;
+                  }, 250); // 3000ms = 3 segundos
+              }
+          };
+
+          // Eventos solo en el CONTENEDOR PADRE
+          // Al entrar en el padre (botón O menú), se abre/mantiene.
+          // Al salir del padre (al vacío), empieza la cuenta atrás.
+          dropdown.addEventListener('mouseenter', openMenu);
+          dropdown.addEventListener('mouseleave', startCloseTimer);
+
+          // Cerrar inmediatamente al hacer clic en un enlace
+          dropdownContent.querySelectorAll('a').forEach(link => {
+              link.addEventListener('click', () => {
+                  dropdownContent.classList.remove('show');
+              });
+          });
+      }
+  });
 </script>
 {% endblock %}

@@ -1,8 +1,5 @@
 body {
   margin: 0;
-  /*
-  font-family: 'Segoe UI', Tahoma, Genevafont-family: 'Outfit', sans-serif;, Verdana, sans-serif;
-  */
   font-family: 'Space Grotesk', sans-serif;
   color: whitesmoke;
   background: url("/static/img/fondo.jpg") no-repeat center center fixed;
@@ -55,10 +52,22 @@ header nav > a:hover {
   color: #00ddff;
 }
 
-/* Dropdown Menu */
+/* --- MENÚ DESPLEGABLE (LÓGICA JS EXCLUSIVA) --- */
 .dropdown {
   position: relative;
   display: inline-block;
+}
+
+/* 1. CAMPO DE FUERZA: Facilita la entrada al menú */
+.dropdown::after {
+  content: '';
+  position: absolute;
+  top: -20px;
+  bottom: -20px;
+  left: -30px;
+  right: -30px;
+  background: transparent; 
+  z-index: 1000;
 }
 
 .dropdown .dropbtn {
@@ -67,10 +76,12 @@ header nav > a:hover {
   color: whitesmoke;
   transition: color 0.2s;
   cursor: pointer;
-  padding: 6px 12px;
+  padding: 10px 12px;
   display: inline-block;
   text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.4);
   font-size: 15px;
+  position: relative;
+  z-index: 1003;
 }
 
 .dropdown .dropbtn:hover {
@@ -78,18 +89,43 @@ header nav > a:hover {
 }
 
 .dropdown-content {
-  display: none;
+  /* Estado Base: Oculto pero listo para animar */
+  visibility: hidden;
+  opacity: 0;
+  
   position: absolute;
   background-color: rgba(0, 119, 182, 0.95);
   min-width: 200px;
   box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.4);
   border-radius: 6px;
-  z-index: 1001;
+  z-index: 1002;
+  
   top: 100%;
   right: 0;
-  margin-top: 5px;
+  margin-top: 0;
   padding: 5px 0;
   backdrop-filter: blur(10px);
+
+  /* Transición suave para aparecer/desaparecer */
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+/* 2. CLASE .SHOW: Control total por JavaScript */
+.dropdown-content.show {
+  visibility: visible;
+  opacity: 1;
+}
+
+/* 3. PUENTE FÍSICO: Conexión segura botón-menú */
+.dropdown-content::before {
+  content: "";
+  position: absolute;
+  top: -20px;
+  left: 0;
+  width: 100%;
+  height: 20px; 
+  background: transparent;
+  display: block;
 }
 
 .dropdown-content a {
@@ -101,6 +137,8 @@ header nav > a:hover {
   font-weight: 600;
   font-size: 15px;
   text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.4);
+  position: relative;
+  z-index: 1004;
 }
 
 .dropdown-content a:first-child {
@@ -116,10 +154,7 @@ header nav > a:hover {
   color: #00ddff;
 }
 
-.dropdown:hover .dropdown-content,
-.dropdown-content:hover {
-  display: block;
-}
+/* NOTA: Eliminamos la regla :hover CSS para que no interfiera con el JS */
 
 .auth-btn {
   padding: 8px 18px;

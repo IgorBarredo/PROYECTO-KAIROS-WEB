@@ -1,0 +1,171 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Cancel Product - Proyecto Kairos{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/contratar.css' %}">
+{% endblock %}
+
+{% block content %}
+<!-- Breadcrumbs -->
+<nav class="breadcrumb">
+  <a href="{% url 'appKairos:dashboard' %}">Dashboard</a> 
+  <span>›</span>
+  <span class="current">Cancel Product</span>
+</nav>
+
+<!-- Main Content -->
+<main class="contratar-main">
+  
+  <div class="contratar-container">
+    
+    <div class="back-link">
+      <a href="{% url 'appKairos:dashboard' %}">← Back to Dashboard</a>
+    </div>
+
+    <h1>Cancel Financial Product</h1>
+    
+    <div class="contratar-grid">
+      
+      <!-- Product Information -->
+      <section class="product-info-section">
+        <div class="product-header">
+          <h2>{{ contrato.producto.nombre }}</h2>
+          <span class="product-badge">{{ contrato.producto.codigo }}</span>
+        </div>
+        
+        <div class="product-description">
+          <p>{{ contrato.producto.descripcion }}</p>
+        </div>
+
+        <div class="product-details">
+          <h3>Markets</h3>
+          <div class="markets-list">
+            {% for mercado in contrato.producto.mercados.all %}
+              <span class="market-badge">{{ mercado.codigo }}</span>
+            {% endfor %}
+          </div>
+        </div>
+
+        <div class="product-stats">
+          <div class="stat-item">
+            <span class="stat-icon">📊</span>
+            <div>
+              <p class="stat-label">Status</p>
+              <p class="stat-value">{{ contrato.estado|title }}</p>
+            </div>
+          </div>
+          <div class="stat-item">
+            <span class="stat-icon">💰</span>
+            <div>
+              <p class="stat-label">Investment Amount</p>
+              <p class="stat-value">€{{ contrato.monto_invertido|floatformat:2 }}</p>
+            </div>
+          </div>
+          <div class="stat-item">
+            <span class="stat-icon">📅</span>
+            <div>
+              <p class="stat-label">Contract Date</p>
+              <p class="stat-value">{{ contrato.fecha_contratacion|date:"M d, Y" }}</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="risk-warning">
+          <span class="warning-icon">⚠️</span>
+          <div>
+            <strong>Important:</strong> Canceling this product will terminate your investment. Any accrued profits or losses will be finalized upon cancellation.
+          </div>
+        </div>
+
+      </section>
+
+      <!-- Cancel Form -->
+      <section class="contract-form-section">
+        <div class="form-header">
+          <h2>Confirm Cancellation</h2>
+          <span class="form-icon">❌</span>
+        </div>
+        
+        <form method="POST" class="contratar-form" id="cancelForm">
+          {% csrf_token %}
+          
+          <div class="investment-summary">
+            <h3>Cancellation Summary</h3>
+            <div class="summary-row">
+              <span>Product:</span>
+              <span class="summary-value">{{ contrato.producto.nombre }}</span>
+            </div>
+            <div class="summary-row">
+              <span>Investment Amount:</span>
+              <span class="summary-value">€{{ contrato.monto_invertido|floatformat:2 }}</span>
+            </div>
+            <div class="summary-row">
+              <span>Current Capital:</span>
+              <span class="summary-value">€{{ contrato.capital_actual|floatformat:2 }}</span>
+            </div>
+            <div class="summary-row total">
+              <span>Net Result:</span>
+              <span class="summary-value {% if contrato.capital_actual > contrato.monto_invertido %}positive{% else %}negative{% endif %}">
+                €{{ contrato.capital_actual|floatformat:2|add:"-0.00"|add:contrato.monto_invertido|floatformat:2 }}
+              </span>
+            </div>
+          </div>
+
+          <div class="form-check">
+            <input 
+              type="checkbox" 
+              id="confirm_cancel" 
+              name="confirm_cancel" 
+              required
+            >
+            <label for="confirm_cancel">
+              I understand that canceling this product will terminate my investment and I will receive the current capital value.
+            </label>
+          </div>
+
+          <div class="form-actions">
+            <button type="button" onclick="window.history.back()" class="btn-secondary">Back</button>
+            <button type="submit" class="btn-primary" id="submitBtn">Confirm Cancellation</button>
+          </div>
+
+        </form>
+
+      </section>
+
+    </div>
+
+  </div>
+
+</main>
+
+<script>
+  // Validar formulario antes de enviar
+  document.getElementById('cancelForm').addEventListener('submit', function(e) {
+    const confirmCancel = document.getElementById('confirm_cancel').checked;
+    
+    if (!confirmCancel) {
+      e.preventDefault();
+      alert('You must confirm the cancellation to continue.');
+      return false;
+    }
+    
+    // Confirmar antes de enviar
+    if (!confirm(`Are you sure you want to cancel your investment in ${contrato.producto.nombre}? This action cannot be undone.`)) {
+      e.preventDefault();
+      return false;
+    }
+  });
+</script>
+
+<style>
+  .positive {
+    color: #4ade80 !important;
+  }
+  
+  .negative {
+    color: #f87171 !important;
+  }
+</style>
+{% endblock %}

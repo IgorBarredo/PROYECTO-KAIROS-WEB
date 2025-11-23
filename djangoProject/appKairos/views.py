@@ -608,7 +608,7 @@ def desactivar_2fa_view(request):
 
 
 # ============================================================================
-# VISTA DEL DASHBOARD
+# VISTA DEL DASHBOARD Y GESTIÓN DE HISTORIAL
 # ============================================================================
 
 @login_required
@@ -619,59 +619,118 @@ def dashboard_view(request):
     """
     usuario = request.user
     
-    # Obtener productos contratados
-    productos_contratados = ProductoContratado.objects.filter(
+    # 1. Obtener productos contratados (activos, pendientes, cancelados)
+    productos_todos = ProductoContratado.objects.filter(
         usuario=usuario
-    ).select_related('producto').prefetch_related('producto__mercados')
+    ).select_related('producto').prefetch_related('producto__mercados').order_by('-fecha_contratacion')
     
-    # Calcular capital total
-    capital_total = productos_contratados.filter(
+    # Calcular ganancias
+    for contrato in productos_todos:
+        contrato.ganancia = contrato.capital_actual - contrato.monto_invertido
+
+    # Crear lista filtrada para "Your Products" (excluyendo cancelados)
+    productos_visualizables = [p for p in productos_todos if p.estado != 'cancelado']
+    
+    # 2. Calcular capital total (solo productos activos)
+    capital_total = productos_todos.filter(
         estado='activo'
     ).aggregate(
         total=Sum('capital_actual')
     )['total'] or 0
     
-    # Actualizar capital total del usuario
+    # Actualizar capital total del usuario en BD
     usuario.capital_total = capital_total
     usuario.save()
     
-    # Obtener resultados mensuales para gráficas
+    # 3. Obtener resultados mensuales para gráficas
     resultados = Resultado.objects.filter(
         usuario=usuario
     ).order_by('fecha')
     
-    # Preparar datos para gráficas
-    fechas = [r.fecha.strftime('%Y-%m') for r in resultados]
-    capitales = [float(r.capital_mes) for r in resultados]
-    porcentajes = [float(r.porcentaje_cambio) for r in resultados]
+    # 4. Preparar datos para gráficas
+    fechas = []
+    capitales = []
+    porcentajes = []
     
-    # Obtener productos disponibles para contratar
+    if resultados.exists():
+        fechas = [r.fecha.strftime('%Y-%m') for r in resultados]
+        capitales = [float(r.capital_mes) for r in resultados]
+        porcentajes = [float(r.porcentaje_cambio) for r in resultados]
+    else:
+        # Lógica de línea recta si no hay historial
+        if capital_total > 0:
+            hoy = timezone.now().date()
+            fechas = [(hoy - timedelta(days=30)).strftime('%Y-%m'), hoy.strftime('%Y-%m')]
+            capitales = [float(capital_total), float(capital_total)]
+            porcentajes = [0, 0]
+
+    # 5. Cálculo de Drawdown
+    max_drawdown = 0
+    if capitales:
+        peak = capitales[0]
+        for value in capitales:
+            if value > peak:
+                peak = value
+            dd = (peak - value) / peak if peak > 0 else 0
+            if dd > max_drawdown:
+                max_drawdown = dd
+    
+    max_drawdown_percent = max_drawdown * 100
+
+    # 6. Productos Disponibles
+    productos_ocupados_ids = productos_todos.filter(
+        Q(estado='activo') | Q(estado='pendiente')
+    ).values_list('producto_id', flat=True)
+    
     productos_disponibles = Producto.objects.filter(activo=True).exclude(
-        id__in=productos_contratados.values_list('producto_id', flat=True)
+        id__in=productos_ocupados_ids
     )
     
-    # Estadísticas del usuario
-    total_invertido = productos_contratados.aggregate(
+    # 7. Estadísticas Generales
+    inversion_activa = productos_todos.filter(estado='activo').aggregate(
         total=Sum('monto_invertido')
     )['total'] or 0
     
-    ganancia_total = capital_total - total_invertido
-    porcentaje_ganancia = (ganancia_total / total_invertido * 100) if total_invertido > 0 else 0
+    ganancia_total = capital_total - inversion_activa
+    porcentaje_ganancia = (ganancia_total / inversion_activa * 100) if inversion_activa > 0 else 0
     
     context = {
         'usuario': usuario,
-        'productos_contratados': productos_contratados,
+        'productos_contratados': productos_todos, # Lista completa para historial/modal
+        'productos_visualizables': productos_visualizables, # Lista filtrada para visualización principal
         'capital_total': capital_total,
-        'total_invertido': total_invertido,
+        'total_invertido': inversion_activa,
         'ganancia_total': ganancia_total,
         'porcentaje_ganancia': porcentaje_ganancia,
-        'fechas': fechas,
+        'fechas': fechas, 
         'capitales': capitales,
         'porcentajes': porcentajes,
+        'max_drawdown': max_drawdown_percent,
         'productos_disponibles': productos_disponibles,
+        'historial_resultados': resultados,
+        'historial_productos': productos_todos,
     }
     
     return render(request, 'dashboard_en.html', context)
+
+
+@login_required
+@require_http_methods(["POST"])
+def borrar_historial_view(request):
+    """
+    Vista para borrar el historial de resultados y productos cancelados/inactivos.
+    No borra productos activos.
+    """
+    usuario = request.user
+    
+    # Borrar resultados históricos
+    Resultado.objects.filter(usuario=usuario).delete()
+    
+    # Opcional: Borrar productos cancelados del historial visual si se desea limpiar todo
+    # ProductoContratado.objects.filter(usuario=usuario, estado='cancelado').delete()
+    
+    messages.success(request, 'History cleared successfully.')
+    return redirect('appKairos:dashboard')
 
 
 # ============================================================================
@@ -691,6 +750,16 @@ def contratar_producto_view(request, producto_id):
             contrato.producto = producto
             contrato.capital_actual = contrato.monto_invertido
             contrato.save()
+            
+            # Crear un registro inicial en Resultado para que la gráfica empiece
+            Resultado.objects.create(
+                usuario=request.user,
+                producto_contratado=contrato,
+                mes=timezone.now().strftime('%B'),
+                anio=timezone.now().year,
+                capital_mes=contrato.capital_actual,
+                fecha=timezone.now()
+            )
             
             messages.success(request, f'Producto "{producto.nombre}" contratado exitosamente.')
             return redirect('appKairos:dashboard')
@@ -714,6 +783,10 @@ def cancelar_producto_view(request, contrato_id):
         contrato.estado = 'cancelado'
         contrato.fecha_fin = timezone.now()
         contrato.save()
+        
+        # Actualizar capital total del usuario
+        request.user.calcular_capital_total()
+        
         messages.success(request, 'Producto cancelado exitosamente.')
         return redirect('appKairos:dashboard')
     

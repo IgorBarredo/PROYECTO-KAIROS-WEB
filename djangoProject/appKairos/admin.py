@@ -7,11 +7,19 @@ from .models import (
     Resultado, TokenVerificacionEmail, SesionSeguridad
 )
 
+# --- Mixin de Seguridad para Fintech ---
+class SoloSuperusuarioBorraMixin:
+    """
+    Mixin para evitar que el staff borre registros financieros sensibles.
+    Solo el superusuario puede borrar.
+    """
+    def has_delete_permission(self, request, obj=None):
+        return request.user.is_superuser
 
 @admin.register(Usuario)
 class UsuarioAdmin(UserAdmin):
     """
-    Administración personalizada para el modelo Usuario
+    Administración personalizada para el modelo Usuario.
     """
     list_display = [
         'email', 'username', 'capital_total', 'email_verificado', 
@@ -32,7 +40,8 @@ class UsuarioAdmin(UserAdmin):
             'fields': ('first_name', 'last_name', 'telefono')
         }),
         ('Información Financiera', {
-            'fields': ('capital_total',)
+            # Hacemos el capital readonly para evitar ediciones manuales accidentales del staff
+            'fields': ('capital_total',) 
         }),
         ('Seguridad', {
             'fields': (
@@ -48,12 +57,12 @@ class UsuarioAdmin(UserAdmin):
         }),
     )
     
-    readonly_fields = ['fecha_registro', 'last_login', 'fecha_verificacion_email', 'fecha_activacion_2fa']
+    # Capital total solo debería recalcularse, no editarse a mano
+    readonly_fields = ['capital_total', 'fecha_registro', 'last_login', 'fecha_verificacion_email', 'fecha_activacion_2fa']
     
     actions = ['recalcular_capital_total', 'verificar_email', 'activar_usuarios', 'desactivar_usuarios']
     
     def recalcular_capital_total(self, request, queryset):
-        """Acción para recalcular el capital total de usuarios seleccionados"""
         count = 0
         for usuario in queryset:
             usuario.calcular_capital_total()
@@ -62,7 +71,9 @@ class UsuarioAdmin(UserAdmin):
     recalcular_capital_total.short_description = "Recalcular capital total"
     
     def verificar_email(self, request, queryset):
-        """Acción para marcar emails como verificados"""
+        if not request.user.is_superuser:
+            self.message_user(request, "Solo superusuarios pueden verificar emails masivamente.", level='ERROR')
+            return
         count = queryset.update(
             email_verificado=True,
             fecha_verificacion_email=timezone.now()
@@ -71,13 +82,11 @@ class UsuarioAdmin(UserAdmin):
     verificar_email.short_description = "Marcar email como verificado"
     
     def activar_usuarios(self, request, queryset):
-        """Acción para activar usuarios"""
         count = queryset.update(is_active=True)
         self.message_user(request, f'{count} usuario(s) activado(s).')
     activar_usuarios.short_description = "Activar usuarios seleccionados"
     
     def desactivar_usuarios(self, request, queryset):
-        """Acción para desactivar usuarios"""
         count = queryset.update(is_active=False)
         self.message_user(request, f'{count} usuario(s) desactivado(s).')
     desactivar_usuarios.short_description = "Desactivar usuarios seleccionados"
@@ -85,16 +94,12 @@ class UsuarioAdmin(UserAdmin):
 
 @admin.register(Mercado)
 class MercadoAdmin(admin.ModelAdmin):
-    """
-    Administración para el modelo Mercado
-    """
     list_display = ['nombre', 'codigo', 'activo', 'cantidad_productos']
     list_filter = ['activo']
     search_fields = ['nombre', 'codigo']
     ordering = ['nombre']
     
     def cantidad_productos(self, obj):
-        """Muestra la cantidad de productos que operan en este mercado"""
         count = obj.productos.count()
         return format_html('<strong>{}</strong> producto(s)', count)
     cantidad_productos.short_description = 'Productos'
@@ -102,9 +107,6 @@ class MercadoAdmin(admin.ModelAdmin):
 
 @admin.register(Producto)
 class ProductoAdmin(admin.ModelAdmin):
-    """
-    Administración para el modelo Producto
-    """
     list_display = ['nombre', 'codigo', 'mostrar_mercados', 'activo', 'fecha_creacion', 'cantidad_contrataciones']
     list_filter = ['activo', 'mercados', 'fecha_creacion']
     search_fields = ['nombre', 'codigo', 'descripcion']
@@ -126,7 +128,6 @@ class ProductoAdmin(admin.ModelAdmin):
     readonly_fields = ['fecha_creacion']
     
     def mostrar_mercados(self, obj):
-        """Muestra los mercados en los que opera el producto"""
         mercados = obj.mercados.all()
         if mercados:
             return ', '.join([m.codigo for m in mercados])
@@ -134,16 +135,15 @@ class ProductoAdmin(admin.ModelAdmin):
     mostrar_mercados.short_description = 'Mercados'
     
     def cantidad_contrataciones(self, obj):
-        """Muestra cuántos usuarios han contratado este producto"""
         count = obj.contrataciones.filter(estado='activo').count()
         return format_html('<strong>{}</strong> contratación(es)', count)
     cantidad_contrataciones.short_description = 'Contrataciones Activas'
 
 
 @admin.register(ProductoContratado)
-class ProductoContratadoAdmin(admin.ModelAdmin):
+class ProductoContratadoAdmin(SoloSuperusuarioBorraMixin, admin.ModelAdmin):
     """
-    Administración para el modelo ProductoContratado
+    Gestiona los contratos. Protegido: Staff no puede borrar contratos, solo cancelar.
     """
     list_display = [
         'usuario', 'producto', 'monto_invertido_formato', 
@@ -164,20 +164,16 @@ class ProductoContratadoAdmin(admin.ModelAdmin):
     
     readonly_fields = ['fecha_contratacion', 'fecha_actualizacion']
     
-    actions = ['activar_productos', 'cancelar_productos', 'marcar_como_activo']
+    actions = ['activar_productos', 'cancelar_productos']
     
     def monto_invertido_formato(self, obj):
-        """Formatea el monto invertido con símbolo de euro"""
         return format_html('€ <strong>{:,.2f}</strong>', obj.monto_invertido)
     monto_invertido_formato.short_description = 'Monto Invertido'
     
     def estado_badge(self, obj):
-        """Muestra el estado con colores"""
         colors = {
-            'activo': 'green',
-            'inactivo': 'red',
-            'pendiente': 'orange',
-            'cancelado': 'gray'
+            'activo': 'green', 'inactivo': 'red',
+            'pendiente': 'orange', 'cancelado': 'gray'
         }
         color = colors.get(obj.estado, 'gray')
         return format_html(
@@ -187,28 +183,21 @@ class ProductoContratadoAdmin(admin.ModelAdmin):
     estado_badge.short_description = 'Estado'
     
     def activar_productos(self, request, queryset):
-        """Acción para activar productos contratados"""
         count = queryset.update(estado='activo')
         self.message_user(request, f'{count} producto(s) activado(s).')
     activar_productos.short_description = "Activar productos seleccionados"
     
     def cancelar_productos(self, request, queryset):
-        """Acción para cancelar productos contratados"""
-        count = queryset.update(estado='cancelado')
+        # Preferible cancelar a borrar
+        count = queryset.update(estado='cancelado', fecha_fin=timezone.now())
         self.message_user(request, f'{count} producto(s) cancelado(s).')
     cancelar_productos.short_description = "Cancelar productos seleccionados"
-    
-    def marcar_como_activo(self, request, queryset):
-        """Acción para marcar estado como activo"""
-        count = queryset.update(estado='activo')
-        self.message_user(request, f'{count} producto(s) marcado(s) como activo.')
-    marcar_como_activo.short_description = "Marcar como Activo"
 
 
 @admin.register(Resultado)
-class ResultadoAdmin(admin.ModelAdmin):
+class ResultadoAdmin(SoloSuperusuarioBorraMixin, admin.ModelAdmin):
     """
-    Administración para el modelo Resultado
+    Track Record Financiero. Protegido: El staff NO puede borrar historial.
     """
     list_display = [
         'usuario', 'producto_info', 'mes', 'anio', 
@@ -236,19 +225,16 @@ class ResultadoAdmin(admin.ModelAdmin):
     readonly_fields = ['fecha_registro']
     
     def producto_info(self, obj):
-        """Muestra información del producto"""
         if obj.producto_contratado:
             return obj.producto_contratado.producto.nombre
         return 'Total General'
     producto_info.short_description = 'Producto'
     
     def capital_formato(self, obj):
-        """Formatea el capital con símbolo de euro"""
         return format_html('€ <strong>{:,.2f}</strong>', obj.capital_mes)
     capital_formato.short_description = 'Capital'
     
     def cambio_formato(self, obj):
-        """Formatea el cambio mensual con color según sea positivo o negativo"""
         color = 'green' if obj.cambio_mensual >= 0 else 'red'
         signo = '+' if obj.cambio_mensual >= 0 else ''
         return format_html(
@@ -258,7 +244,6 @@ class ResultadoAdmin(admin.ModelAdmin):
     cambio_formato.short_description = 'Cambio Mensual'
     
     def porcentaje_formato(self, obj):
-        """Formatea el porcentaje con color según sea positivo o negativo"""
         color = 'green' if obj.porcentaje_cambio >= 0 else 'red'
         signo = '+' if obj.porcentaje_cambio >= 0 else ''
         return format_html(
@@ -270,9 +255,6 @@ class ResultadoAdmin(admin.ModelAdmin):
 
 @admin.register(TokenVerificacionEmail)
 class TokenVerificacionEmailAdmin(admin.ModelAdmin):
-    """
-    Administración para tokens de verificación de email
-    """
     list_display = ['usuario', 'token_corto', 'fecha_creacion', 'expira_en', 'usado', 'estado_token']
     list_filter = ['usado', 'fecha_creacion', 'expira_en']
     search_fields = ['usuario__email', 'token']
@@ -280,12 +262,10 @@ class TokenVerificacionEmailAdmin(admin.ModelAdmin):
     readonly_fields = ['fecha_creacion']
     
     def token_corto(self, obj):
-        """Muestra solo los primeros caracteres del token"""
         return f"{obj.token[:20]}..."
     token_corto.short_description = 'Token'
     
     def estado_token(self, obj):
-        """Muestra el estado del token con colores"""
         if obj.usado:
             return format_html('<span style="color: gray;">Usado</span>')
         elif obj.esta_expirado():
@@ -298,7 +278,9 @@ class TokenVerificacionEmailAdmin(admin.ModelAdmin):
 @admin.register(SesionSeguridad)
 class SesionSeguridadAdmin(admin.ModelAdmin):
     """
-    Administración para sesiones de seguridad
+    LOGS DE SEGURIDAD.
+    Nadie puede agregar o editar logs.
+    Solo el superusuario puede borrar logs (aunque se recomienda no hacerlo).
     """
     list_display = [
         'usuario_email', 'usuario', 'ip_address', 
@@ -307,27 +289,13 @@ class SesionSeguridadAdmin(admin.ModelAdmin):
     list_filter = ['exitoso', 'requirio_2fa', 'fecha_intento']
     search_fields = ['usuario__email', 'ip_address']
     ordering = ['-fecha_intento']
-    readonly_fields = ['fecha_intento']
-    
-    fieldsets = (
-        ('Información del Intento', {
-            'fields': ('usuario', 'exitoso', 'motivo_fallo')
-        }),
-        ('Seguridad', {
-            'fields': ('requirio_2fa', 'ip_address', 'user_agent')
-        }),
-        ('Fecha', {
-            'fields': ('fecha_intento',)
-        }),
-    )
+    readonly_fields = ['fecha_intento', 'usuario', 'ip_address', 'user_agent', 'exitoso', 'requirio_2fa', 'motivo_fallo']
     
     def usuario_email(self, obj):
-        """Muestra el email del usuario"""
         return obj.usuario.email if obj.usuario else 'Desconocido'
     usuario_email.short_description = 'Email'
     
     def estado_badge(self, obj):
-        """Muestra el estado del intento con colores"""
         if obj.exitoso:
             return format_html('<span style="background-color: green; color: white; padding: 3px 10px; border-radius: 3px;">Exitoso</span>')
         else:
@@ -335,9 +303,11 @@ class SesionSeguridadAdmin(admin.ModelAdmin):
     estado_badge.short_description = 'Estado'
     
     def has_add_permission(self, request):
-        """No permitir agregar sesiones manualmente"""
         return False
     
     def has_change_permission(self, request, obj=None):
-        """No permitir editar sesiones"""
         return False
+
+    def has_delete_permission(self, request, obj=None):
+        # Solo el dueño de la empresa (superuser) puede purgar logs si es necesario
+        return request.user.is_superuser

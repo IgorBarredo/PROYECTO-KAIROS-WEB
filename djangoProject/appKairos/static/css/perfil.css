@@ -1,8 +1,46 @@
-/* Profile Styles - Clear transparent design - NO blur */
+/* Profile Styles - Unified Background Color with Dashboard */
+.perfil-main {
+  width: 100%;
+  min-height: 80vh;
+}
+
+.perfil-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  /* AÑADIDO: Margen lateral para que no pegue a los bordes */
+  padding: 0 30px;
+  text-align: center; /* Para centrar el título principal que ahora es inline-block */
+}
+
+/* Main title boxed */
+.perfil-container h1 {
+  font-size: 42px;
+  color: #00ddff;
+  margin-bottom: 40px;
+  text-align: center;
+  text-shadow: 0 0 20px rgba(0, 180, 216, 0.6);
+  
+  /* NUEVO: Estilo de recuadro */
+  background: rgba(20, 20, 30, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 15px 40px;
+  border-radius: 16px;
+  display: inline-block;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+.perfil-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 30px;
+  text-align: left; /* Restaurar alineación para el contenido */
+}
+
 .perfil-section,
 .security-item,
 .stat-card {
-  background: rgba(255, 255, 255, 0.15);
+  /* COLOR DE FONDO UNIFICADO (Igual que la gráfica) */
+  background: rgba(20, 20, 30, 0.6);
   border-radius: 16px;
   border: 1px solid rgba(255, 255, 255, 0.2);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
@@ -18,7 +56,7 @@
 .stat-card:hover {
   transform: translateY(-5px);
   box-shadow: 0 15px 40px rgba(255, 255, 255, 0.15);
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(20, 20, 30, 0.8); /* Darker on hover */
 }
 
 .section-header {
@@ -26,18 +64,30 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 30px;
-  padding-bottom: 15px;
-  border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+  /* MODIFICADO: Quitamos el border-bottom para usar el estilo de caja en el h2 */
+  padding-bottom: 0;
+  border-bottom: none;
 }
 
+/* Section titles boxed */
 .section-header h2 {
-  font-size: 28px;
+  font-size: 24px; /* Un poco más pequeño para encajar mejor en caja */
   color: #00ddff;
   text-shadow: 0 0 15px rgba(0, 180, 216, 0.5);
+  margin: 0;
+  
+  /* NUEVO: Estilo de recuadro */
+  background: rgba(20, 20, 30, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 10px 25px;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
 }
 
 .section-icon {
   font-size: 32px;
+  /* Opcional: poner icono en caja también o dejarlo fuera */
+  padding: 5px;
 }
 
 /* Form Styles */
@@ -114,16 +164,10 @@
   justify-content: space-between;
   align-items: center;
   padding: 20px;
-  background: rgba(255, 255, 255, 0.1);
+  /* background managed by common class above */
   border-radius: 12px;
   border: 1px solid rgba(255, 255, 255, 0.2);
   transition: all 0.3s;
-}
-
-.security-item:hover {
-  background: rgba(255, 255, 255, 0.15);
-  transform: translateY(-3px);
-  box-shadow: 0 6px 16px rgba(255, 255, 255, 0.15);
 }
 
 .security-item-content h3 {
@@ -164,18 +208,12 @@
 }
 
 .stat-card {
-  background: rgba(255, 255, 255, 0.1);
+  /* background managed by common class above */
   padding: 25px 20px;
   border-radius: 12px;
   border: 1px solid rgba(255, 255, 255, 0.2);
   text-align: center;
   transition: all 0.3s;
-}
-
-.stat-card:hover {
-  background: rgba(255, 255, 255, 0.15);
-  transform: translateY(-5px);
-  box-shadow: 0 8px 20px rgba(255, 255, 255, 0.15);
 }
 
 .stat-label {
@@ -254,21 +292,6 @@
   background: rgba(239, 68, 68, 0.5);
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
-}
-
-/* Main title */
-.perfil-container h1 {
-  font-size: 42px;
-  color: #00ddff;
-  margin-bottom: 40px;
-  text-align: center;
-  text-shadow: 0 0 20px rgba(0, 180, 216, 0.6);
-}
-
-.perfil-grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 30px;
 }
 
 /* Responsive */

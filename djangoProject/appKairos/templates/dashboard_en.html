@@ -10,7 +10,6 @@
 {% endblock %}
 
 {% block content %}
-<!-- Header with Consistent Navigation -->
 <header>
   <div class="logo">P.K. Proyecto Kairos</div>
   <nav>
@@ -25,80 +24,102 @@
   </nav>
 </header>
 
-<!-- Main Content -->
+<div class="track-record-section">
+  <div class="track-header-flex">
+    
+    <div class="track-header-left">
+      <h2>Track Record</h2>
+      <div class="capital-inline-info">
+        <span class="cap-amount">€ {{ capital_total|floatformat:2 }}</span>
+        <span class="cap-change {% if ganancia_total >= 0 %}positive{% else %}negative{% endif %}">
+          {% if ganancia_total >= 0 %}+{% endif %}€ {{ ganancia_total|floatformat:2 }} ({{ porcentaje_ganancia|floatformat:1 }}%)
+        </span>
+        <span class="cap-drawdown">Max DD: -{{ max_drawdown|floatformat:2 }}%</span>
+      </div>
+    </div>
+
+    <div class="track-header-right">
+      <div class="chart-controls">
+        <button class="chart-btn active" onclick="updateTrackChart('year')">Years</button>
+        <button class="chart-btn" onclick="updateTrackChart('month')">Months</button>
+        <button class="chart-btn" onclick="updateTrackChart('day')">Days</button>
+      </div>
+      <button id="openStatsBtn" class="btn-history">📜 History</button>
+    </div>
+
+  </div>
+
+  <div class="track-chart-container">
+    <canvas id="trackRecordChart"></canvas>
+  </div>
+</div>
+
 <div class="dashboard-container">
   
-  <!-- Main Content -->
   <main class="dashboard-main">
     
-    <!-- Capital Summary -->
-    <section class="capital-section">
-      <h2>Your Capital</h2>
-      <div class="capital-card">
-        <div class="capital-amount">€ {{ capital_total|floatformat:2 }}</div>
-        <div class="capital-change {% if ganancia_total >= 0 %}positive{% else %}negative{% endif %}">
-          {% if ganancia_total >= 0 %}+{% endif %} € {{ ganancia_total|floatformat:2 }} ({{ porcentaje_ganancia|floatformat:1 }}%)
-        </div>
-      </div>
-    </section>
-
-    <!-- Contracted Products -->
-    <section class="products-section">
-      <h2>Your Products</h2>
-      {% if productos_contratados %}
+    {% if productos_visualizables %}
+      <section class="products-section">
+        <h2>Your Products</h2>
         <div class="products-grid">
-          {% for contrato in productos_contratados %}
+          {% for contrato in productos_visualizables %}
           <div class="product-card">
-            <h3>{{ contrato.producto.nombre }}</h3>
-            <div class="product-info">
-              <span class="product-status {{ contrato.estado }}">{{ contrato.get_estado_display }}</span>
-              <span class="product-amount">€ {{ contrato.capital_actual|floatformat:2 }}</span>
+            
+            <div class="product-content-scroll">
+                <h3>{{ contrato.producto.nombre }}</h3>
+                <div class="product-info">
+                  <span class="product-status {{ contrato.estado }}">{{ contrato.get_estado_display }}</span>
+                  <span class="product-amount">€ {{ contrato.capital_actual|floatformat:2 }}</span>
+                </div>
+                <div class="product-markets">
+                  {% for mercado in contrato.producto.mercados.all %}
+                    <span>{{ mercado.codigo }}</span>
+                  {% endfor %}
+                </div>
+                <div class="product-performance">
+                  <span class="performance-label">Performance:</span>
+                  <span class="performance-value {% if contrato.ganancia >= 0 %}positive{% else %}negative{% endif %}">
+                    {% if contrato.ganancia >= 0 %}+{% endif %}€ {{ contrato.ganancia|floatformat:2 }}
+                  </span>
+                </div>
             </div>
-            <div class="product-markets">
-              {% for mercado in contrato.producto.mercados.all %}
-                <span>{{ mercado.codigo }}</span>
-              {% endfor %}
-            </div>
-            <div class="product-performance">
-              <span class="performance-label">Performance:</span>
-              <span class="performance-value {% if contrato.ganancia >= 0 %}positive{% else %}negative{% endif %}">
-                {% if contrato.ganancia >= 0 %}+{% endif %}€ {{ contrato.ganancia|floatformat:2 }}
-              </span>
-            </div>
+            
+            {% if contrato.estado == 'activo' %}
+            <a href="{% url 'appKairos:cancelar_producto' contrato.id %}" class="btn-cancelar">Cancel Product</a>
+            {% endif %}
+            
           </div>
           {% endfor %}
         </div>
-      {% else %}
-        <div class="empty-state">
-          <p>You haven't contracted any products yet.</p>
-          <a href="{% url 'appKairos:index' %}#productos" class="btn-primary">View Available Products</a>
-        </div>
-      {% endif %}
-    </section>
+      </section>
+    {% endif %}
 
-    <!-- Available Products -->
     {% if productos_disponibles %}
     <section class="available-products-section">
       <h2>Available Products</h2>
       <div class="products-grid">
         {% for producto in productos_disponibles %}
         <div class="product-card available">
-          <h3>{{ producto.nombre }}</h3>
-          <p>{{ producto.descripcion|truncatewords:20 }}</p>
-          <div class="product-details">
-            <div class="detail-item">
-              <span class="detail-label">Markets:</span>
-              <div class="markets-list">
-                {% for mercado in producto.mercados.all %}
-                  <span class="market-badge">{{ mercado.codigo }}</span>
-                {% endfor %}
+          
+          <div class="product-content-scroll">
+              <h3>{{ producto.nombre }}</h3>
+              <p>{{ producto.descripcion }}</p>
+              <div class="product-details">
+                <div class="detail-item">
+                  <span class="detail-label">Markets:</span>
+                  <div class="markets-list">
+                    {% for mercado in producto.mercados.all %}
+                      <span class="market-badge">{{ mercado.codigo }}</span>
+                    {% endfor %}
+                  </div>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-label">Minimum Investment:</span>
+                  <span class="detail-value">€ 100.00</span>
+                </div>
               </div>
-            </div>
-            <div class="detail-item">
-              <span class="detail-label">Minimum Investment:</span>
-              <span class="detail-value">€ 100.00</span>
-            </div>
           </div>
+          
           <a href="{% url 'appKairos:contratar_producto' producto.id %}" class="btn-secondary">Contract Now</a>
         </div>
         {% endfor %}
@@ -106,7 +127,6 @@
     </section>
     {% endif %}
 
-    <!-- Quick Actions -->
     <section class="actions-section">
       <h2>Quick Actions</h2>
       <div class="actions-grid">
@@ -120,8 +140,178 @@
 
 </div>
 
-<!-- Footer -->
+<div id="statsModal" class="modal">
+  <div class="modal-content">
+    <span class="close-modal">&times;</span>
+    <h2>Account History</h2>
+    
+    <div class="stats-tabs">
+      <button class="tab-btn active" onclick="openTab('balanceHistory')">Balance History</button>
+      <button class="tab-btn" onclick="openTab('productHistory')">Product History</button>
+    </div>
+
+    <div id="balanceHistory" class="tab-content active">
+      <table class="stats-table">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Capital</th>
+            <th>Change</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for res in historial_resultados %}
+          <tr>
+            <td>{{ res.fecha|date:"M Y" }}</td>
+            <td>€ {{ res.capital_mes|floatformat:2 }}</td>
+            <td class="{% if res.cambio_mensual >= 0 %}positive-text{% else %}negative-text{% endif %}">
+              {{ res.porcentaje_cambio|floatformat:2 }}%
+            </td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="3">No history available.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <div id="productHistory" class="tab-content">
+      <table class="stats-table">
+        <thead>
+          <tr>
+            <th>Product</th>
+            <th>Status</th>
+            <th>Started</th>
+            <th>Ended</th>
+            <th>Result</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for prod in historial_productos %}
+          <tr>
+            <td>{{ prod.producto.nombre }}</td>
+            <td><span class="status-badge {{ prod.estado }}">{{ prod.get_estado_display }}</span></td>
+            <td>{{ prod.fecha_inicio|date:"M d, Y" }}</td>
+            <td>{{ prod.fecha_fin|date:"M d, Y"|default:"-" }}</td>
+            <td class="{% if prod.ganancia >= 0 %}positive-text{% else %}negative-text{% endif %}">
+              € {{ prod.ganancia|floatformat:2 }}
+            </td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="5">No products contracted yet.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="modal-actions">
+      <form action="{% url 'appKairos:borrar_historial' %}" method="POST" onsubmit="return confirm('Are you sure you want to clear all history? This cannot be undone.');">
+        {% csrf_token %}
+        <button type="submit" class="btn-danger-outline">Clear History</button>
+      </form>
+    </div>
+  </div>
+</div>
+
 <footer>
   <p>© 2025 P.K. Proyecto Kairos. All rights reserved.</p>
 </footer>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // --- Data Preparation ---
+    let labels = JSON.parse('{{ fechas|safe }}'.replace(/&quot;/g,'"'));
+    let dataCapital = JSON.parse('{{ capitales|safe }}'.replace(/&quot;/g,'"'));
+    
+    // Ensure line chart is always drawn even with 0 or 1 data point
+    if (dataCapital.length === 0) {
+       let cap = parseFloat("{{ capital_total|stringformat:'.2f' }}");
+       if (isNaN(cap)) cap = 0;
+       labels = ["Start", "Now"];
+       dataCapital = [cap, cap];
+    } else if (dataCapital.length === 1) {
+       labels.unshift("Start");
+       dataCapital.unshift(dataCapital[0]);
+    }
+
+    // --- Top Track Record Chart ---
+    const ctxTrack = document.getElementById('trackRecordChart');
+    if (ctxTrack) {
+        window.trackChart = new Chart(ctxTrack, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Account Growth',
+                    data: dataCapital,
+                    borderColor: '#10b981', 
+                    backgroundColor: (context) => {
+                        const ctx = context.chart.ctx;
+                        const gradient = ctx.createLinearGradient(0, 0, 0, 300);
+                        gradient.addColorStop(0, 'rgba(16, 185, 129, 0.4)');
+                        gradient.addColorStop(1, 'rgba(16, 185, 129, 0)');
+                        return gradient;
+                    },
+                    fill: true,
+                    tension: 0.3,
+                    pointRadius: 3,
+                    pointHoverRadius: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        grid: { color: 'rgba(255, 255, 255, 0.05)' },
+                        ticks: { color: '#9ca3af' }
+                    },
+                    x: {
+                        grid: { display: false },
+                        ticks: { color: '#9ca3af' }
+                    }
+                },
+                plugins: {
+                    legend: { display: false }
+                }
+            }
+        });
+    }
+
+    // --- Modal Logic ---
+    const modal = document.getElementById("statsModal");
+    const btn = document.getElementById("openStatsBtn");
+    const span = document.getElementsByClassName("close-modal")[0];
+
+    if (btn) {
+        btn.onclick = function() { modal.style.display = "block"; }
+    }
+    span.onclick = function() { modal.style.display = "none"; }
+    window.onclick = function(event) {
+        if (event.target == modal) { modal.style.display = "none"; }
+    }
+});
+
+function openTab(tabName) {
+    var i;
+    var x = document.getElementsByClassName("tab-content");
+    for (i = 0; i < x.length; i++) {
+        x[i].style.display = "none";  
+    }
+    var tabBtns = document.getElementsByClassName("tab-btn");
+    for (i = 0; i < x.length; i++) {
+        tabBtns[i].className = tabBtns[i].className.replace(" active", "");
+    }
+    document.getElementById(tabName).style.display = "block";
+    event.currentTarget.className += " active";
+}
+
+function updateTrackChart(period) {
+    const btns = document.querySelectorAll('.chart-btn');
+    btns.forEach(b => b.classList.remove('active'));
+    event.target.classList.add('active');
+    console.log("Filtering by: " + period);
+}
+</script>
 {% endblock %}
