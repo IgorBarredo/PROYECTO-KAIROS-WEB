@@ -125,7 +125,8 @@ STATICFILES_DIRS = [
 ]
 
 # Motor de almacenamiento de WhiteNoise con compresión (Hace que la web cargue rápido)
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+#STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'    # esta si falta un icono rompe la web
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'             #esta no rompe la web si falta un icono
 
 # Media files (Archivos subidos por usuarios, si hubiera)
 MEDIA_URL = '/media/'
