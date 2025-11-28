@@ -526,42 +526,41 @@ footer {
   text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.4);
 }
 
-/* =========================================
-   ESTILOS BASE (ESCRITORIO / PC)
-   (Estos estilos se aplican siempre, a menos que el móvil los sobrescriba)
-   ========================================= */
+/* =========================================================
+   1. ESTILOS BASE (ESCRITORIO / PC)
+   Estos estilos definen la "caja flotante" elegante para PC
+   ========================================================= */
 
-/* Contenedor de la gráfica elegante para PC */
 .chart-wrapper {
   max-width: 1400px;
-  width: 70%;       /* Ancho controlado en PC */
-  height: 600px;    /* Altura fija ideal para monitor */
+  width: 70%;       /* En PC ocupa el 70% del ancho */
+  height: 600px;    /* Altura fija grande para monitor */
   margin: 0 auto;
-  background: rgba(0, 0, 0, 0.6); /* Fondo oscuro semitransparente */
+  background: rgba(0, 0, 0, 0.6);
   padding: 30px;
-  border-radius: 12px; /* Esquinas redondeadas */
+  border-radius: 12px;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
   position: relative;
 }
 
-/* Aseguramos que el canvas llene su contenedor */
+/* El canvas siempre llena el 100% de su contenedor padre (.chart-wrapper) */
 canvas#capitalChart {
   width: 100% !important;
   height: 100% !important;
 }
 
-/* =========================================
-   RESPONSIVE DESIGN (SOLO MÓVIL)
-   (Todo lo que pongas aquí SOBRESCRIBE lo de arriba cuando la pantalla es pequeña)
-   ========================================= */
+/* =========================================================
+   2. RESPONSIVE DESIGN (SOLO MÓVIL - Menos de 768px)
+   Aquí sobrescribimos para lograr el efecto "App Nativa"
+   ========================================================= */
 @media (max-width: 768px) {
 
-  /* 1. Textos y Botones Ajustados */
+  /* A. Textos ajustados para móvil */
   .hero h1 { font-size: 36px; }
   .hero h3 { font-size: 16px; margin-bottom: 40px; }
   .hero .btn { font-size: 20px; padding: 12px 40px; }
 
-  /* 2. Pestañas (Tab Buttons) más grandes para el dedo */
+  /* B. Pestañas grandes y fáciles de tocar */
   .tabs-container {
     gap: 8px;
     margin-bottom: 15px;
@@ -569,52 +568,48 @@ canvas#capitalChart {
   }
   
   .tab-btn {
-    flex: 1 1 40%;      /* Ocupan casi la mitad del ancho cada uno */
-    padding: 12px 5px;  /* Más altos para pulsar fácil */
+    flex: 1 1 40%;       /* Se expanden para llenar la fila */
+    padding: 12px 5px;
     font-size: 14px;
     display: flex;
     align-items: center;
     justify-content: center;
   }
 
-  /* 3. Sección Gráfica a Pantalla Completa */
+  /* C. SECCIÓN DE LA GRÁFICA (Ajuste de márgenes) */
   .grafica {
-      padding: 10px 0px !important; /* Quitamos márgenes laterales */
+      /* Quitamos el padding lateral para ganar ancho */
+      padding: 20px 0px !important; 
       width: 100% !important;
-      margin: 20px 0 !important;
   }
 
   .grafica h2 {
-      padding: 0 20px; /* Margen solo para el título */
-      font-size: 20px;
-      margin-bottom: 15px;
+      padding: 0 20px; /* Mantenemos margen solo en el título */
+      font-size: 22px;
   }
 
-  /* 4. Transformación del Contenedor de Gráfica para Móvil */
+  /* D. CONTENEDOR DE GRÁFICA (Transformación para Móvil) */
   .chart-wrapper {
-    /* Anulamos el estilo de PC */
-    width: 100% !important;
+    width: 100% !important;   /* 1. ANCHO TOTAL */
     margin: 0 !important;
-    border-radius: 0 !important; /* Recto para pegar a los bordes */
-    box-shadow: none !important;
-    background: transparent !important; /* Opcional: quitar fondo gris en móvil si prefieres */
+    border-radius: 0 !important; /* 2. Sin bordes redondos */
+    box-shadow: none !important; /* 3. Sin sombra externa */
     
-    /* Bordes sutiles arriba y abajo para separar */
+    /* 4. ALTURA DINÁMICA */
+    height: 50vh !important;  /* Ocupa el 50% de la altura de la pantalla */
+    min-height: 350px;        /* Pero nunca menos de esto */
+    max-height: 600px;
+    
+    /* Bordes decorativos arriba y abajo */
     border-top: 1px solid rgba(255,255,255,0.1);
     border-bottom: 1px solid rgba(255,255,255,0.1);
     
-    /* ALTURA INTELIGENTE */
-    height: 60vh !important;  /* 60% de la altura de la pantalla */
-    min-height: 350px;        /* Nunca menos de esto */
-    max-height: 600px;
-    
-    padding: 10px 0px !important; /* Aprovechar al máximo el ancho */
+    padding: 10px 0px !important; /* Aprovechamos todo el ancho */
   }
 
-  /* 5. Productos en columna */
+  /* E. Productos en una sola columna */
   .productos-container {
     grid-template-columns: 1fr;
     padding: 0 15px;
-    gap: 20px;
   }
 }
