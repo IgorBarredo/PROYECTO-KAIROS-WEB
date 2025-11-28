@@ -51,7 +51,9 @@
     <button class="tab-btn active" data-product="multi">MultiMarkets</button>
   </div>
   
-  <canvas id="capitalChart"></canvas>
+  <div class="chart-wrapper">
+      <canvas id="capitalChart"></canvas>
+  </div>
 </section>
 
 <section id="productos" class="productos">
@@ -143,6 +145,30 @@
   let capitalChart;
   let activeProducts = ['mpt', 'golden', 'multi'];
 
+  // --- Lógica del Menú Móvil ---
+  document.addEventListener('DOMContentLoaded', () => {
+      const header = document.querySelector('header');
+      const logo = document.querySelector('.logo');
+
+      // Solo si existen el header y el logo
+      if (header && logo) {
+          logo.addEventListener('click', (e) => {
+              // Solo activamos la lógica si la pantalla es pequeña (móvil)
+              if (window.innerWidth <= 768) {
+                  // Esto pone o quita la clase que hace visible el menú en el CSS
+                  header.classList.toggle('menu-open');
+              }
+          });
+      }
+      
+      // Opcional: Cerrar menú si se cambia el tamaño de la ventana a escritorio
+      window.addEventListener('resize', () => {
+          if (window.innerWidth > 768) {
+              header.classList.remove('menu-open');
+          }
+      });
+  });
+
   function updateChart() {
     const datasets = activeProducts.map(product => ({
       label: productData[product].label,
@@ -168,22 +194,71 @@
         },
         options: {
           responsive: true,
+          maintainAspectRatio: false, // CRÍTICO: Deja que el CSS (60vh) controle la altura
+          layout: {
+              padding: {
+                  left: 0,
+                  right: 10,
+                  top: 10,
+                  bottom: 0
+              }
+          },
           plugins: {
             legend: {
-              labels: {
-                color: '#fff'
+              position: 'bottom', // Leyenda abajo para dar espacio a la curva
+              align: 'center',
+              labels: { 
+                  color: '#fff', 
+                  boxWidth: 12, 
+                  padding: 20,
+                  font: { size: 12 } 
               }
+            },
+            tooltip: {
+                mode: 'index',
+                intersect: false,
+                backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                titleColor: '#fff',
+                bodyColor: '#fff',
+                borderColor: 'rgba(255,255,255,0.1)',
+                borderWidth: 1
             }
           },
           scales: {
             x: {
-              ticks: { color: '#fff' },
-              grid: { color: 'rgba(255,255,255,0.1)' }
+              ticks: {
+                color: 'rgba(255,255,255,0.7)',
+                font: { size: 10 },
+                maxRotation: 0,
+                autoSkip: true,
+                maxTicksLimit: 6
+              },
+              grid: { color: 'rgba(255,255,255,0.05)', drawBorder: false }
             },
             y: {
-              ticks: { color: '#fff' },
-              grid: { color: 'rgba(255,255,255,0.1)' }
+              beginAtZero: false, // Empieza en el mínimo para exagerar la curva
+              ticks: {
+                color: 'rgba(255,255,255,0.7)',
+                font: { size: 10 },
+                callback: function(value) { 
+                    // Formato compacto: 1.5k en vez de 1500
+                    if(value >= 1000) return (value/1000).toFixed(1) + 'k€';
+                    return value + '€'; 
+                }
+              },
+              grid: { color: 'rgba(255,255,255,0.1)', borderDash: [5, 5] }
             }
+          },
+          elements: {
+              point: { 
+                  radius: 0,       /* Oculta los puntos (más limpio) */
+                  hitRadius: 20,   /* Pero hace fácil tocarlos */
+                  hoverRadius: 6   /* Aparecen al pasar el ratón/dedo */
+              },
+              line: { 
+                  borderWidth: 3,
+                  tension: 0.3     /* Curvas suaves */
+              } 
           }
         }
       });
@@ -212,7 +287,6 @@
     updateChart();
   }
 
-  // --- Lógica "Pegajosa" DEFINITIVA para el Menú (3 SEGUNDOS) ---
   document.addEventListener('DOMContentLoaded', () => {
       const dropdown = document.getElementById('contactDropdown');
       

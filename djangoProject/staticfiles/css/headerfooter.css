@@ -109,28 +109,67 @@ footer {
   text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.4);
 }
 
-/* Responsive Design */
+/* Responsive Design - Menú Móvil */
 @media (max-width: 768px) {
   header {
     padding: 15px 20px;
     flex-direction: column;
-    gap: 10px;
+    gap: 0;
+    align-items: stretch;
   }
   
+  /* El logo actúa como botón */
+  .logo {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    padding-bottom: 10px;
+  }
+
+  /* Icono de Hamburguesa (☰) */
+  .logo::after {
+    content: '☰'; 
+    font-size: 24px;
+    color: white;
+    margin-left: 10px;
+    transition: transform 0.3s ease;
+  }
+
+  /* Si el menú está abierto, cambiamos a X */
+  header.menu-open .logo::after {
+    content: '✕';
+    transform: rotate(90deg);
+  }
+  
+  /* ESTADO INICIAL: OCULTO */
   nav {
-    gap: 10px;
-    flex-wrap: wrap;
-    justify-content: center;
+    display: none; 
+    flex-direction: column;
+    width: 100%;
+    background-color: rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
+    margin-top: 5px;
+    overflow: hidden;
+  }
+
+  /* ESTADO ABIERTO: VISIBLE (Clase que pone JS) */
+  header.menu-open nav {
+    display: flex;
+    animation: slideDown 0.3s ease-out;
   }
   
-  .linked {
-    font-size: 14px;
-    padding: 6px 12px;
+  .linked, .auth-btn {
+    width: 100%;
+    text-align: center;
+    padding: 15px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
   }
-  
-  .auth-btn {
-    padding: 8px 16px;
-    font-size: 13px;
+
+  /* Animación de apertura */
+  @keyframes slideDown {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
   }
 }
 
