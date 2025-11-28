@@ -78,9 +78,8 @@ WSGI_APPLICATION = 'djangoProject.wsgi.application'
 # ==============================================================================
 
 DATABASES = {
-    'default': dj_database_url.config(
-        # Si no hay variable DATABASE_URL (en tu PC), usa db.sqlite3
-        default='sqlite:///' + str(BASE_DIR / 'db.sqlite3'),
+    'default': dj_database_url.parse(
+        config('DATABASE_URL', default='sqlite:///' + str(BASE_DIR / 'db.sqlite3')),
         conn_max_age=600
     )
 }
@@ -162,6 +161,8 @@ EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')
 DEFAULT_FROM_EMAIL = 'noreply@proyectokairos.com'
 CONTACT_EMAIL = 'contact@proyectokairos.com'
 
+# Evitar el bucle de redirecciones en Render
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 # Seguridad adicional para Producción (Solo se activa si DEBUG es False)
 if not DEBUG:
