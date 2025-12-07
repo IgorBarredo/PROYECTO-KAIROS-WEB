@@ -121,211 +121,71 @@
   // --- Gráfica Chart.js ---
   const ctx = document.getElementById('capitalChart');
   
-  const productData = {
-    mpt: {
-      label: 'M.P.T MarketProThief (€)',
-      data: [1000, 2300, 3800, 5200, 6800, 8500],
-      borderColor: '#00b4d8',
-      backgroundColor: 'rgba(0,180,216,0.2)'
-    },
-    golden: {
-      label: 'GoldenRoad (€)',
-      data: [800, 1600, 2800, 4100, 5600, 7200],
-      borderColor: '#FFD700',
-      backgroundColor: 'rgba(255,215,0,0.2)'
-    },
-    multi: {
-      label: 'MultiMarkets (€)',
-      data: [1200, 2100, 3200, 4500, 6000, 7800],
-      borderColor: '#00ff88',
-      backgroundColor: 'rgba(0,255,136,0.2)'
-    }
-  };
+  if (ctx) { 
+      const productData = {
+        mpt: { label: 'M.P.T MarketProThief (€)', data: [1000, 2300, 3800, 5200, 6800, 8500], borderColor: '#00b4d8', backgroundColor: 'rgba(0,180,216,0.2)' },
+        golden: { label: 'GoldenRoad (€)', data: [800, 1600, 2800, 4100, 5600, 7200], borderColor: '#FFD700', backgroundColor: 'rgba(255,215,0,0.2)' },
+        multi: { label: 'MultiMarkets (€)', data: [1200, 2100, 3200, 4500, 6000, 7800], borderColor: '#00ff88', backgroundColor: 'rgba(0,255,136,0.2)' }
+      };
 
-  let capitalChart;
-  let activeProducts = ['mpt', 'golden', 'multi'];
+      let capitalChart;
+      let activeProducts = ['mpt', 'golden', 'multi'];
 
-  // --- Lógica del Menú Móvil ---
-  document.addEventListener('DOMContentLoaded', () => {
-      const header = document.querySelector('header');
-      const logo = document.querySelector('.logo');
+      function updateChart() {
+        const datasets = activeProducts.map(product => ({
+          label: productData[product].label,
+          data: productData[product].data,
+          borderColor: productData[product].borderColor,
+          backgroundColor: productData[product].backgroundColor,
+          fill: true,
+          tension: 0.3,
+          pointBackgroundColor: productData[product].borderColor,
+          pointBorderColor: '#fff',
+          pointRadius: 0,
+          hitRadius: 20,
+          hoverRadius: 6,
+          borderWidth: 3
+        }));
 
-      // Solo si existen el header y el logo
-      if (header && logo) {
-          logo.addEventListener('click', (e) => {
-              // Solo activamos la lógica si la pantalla es pequeña (móvil)
-              if (window.innerWidth <= 768) {
-                  // Esto pone o quita la clase que hace visible el menú en el CSS
-                  header.classList.toggle('menu-open');
+        if (capitalChart) {
+          capitalChart.data.datasets = datasets;
+          capitalChart.update();
+        } else {
+          capitalChart = new Chart(ctx.getContext('2d'), {
+            type: 'line',
+            data: { labels: ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio'], datasets: datasets },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              layout: { padding: { left: 0, right: 10, top: 10, bottom: 0 } },
+              plugins: {
+                legend: { position: 'bottom', align: 'center', labels: { color: '#fff', boxWidth: 12, padding: 20, font: { size: 12 } } },
+                tooltip: { mode: 'index', intersect: false, backgroundColor: 'rgba(0, 0, 0, 0.8)', titleColor: '#fff', bodyColor: '#fff', borderColor: 'rgba(255,255,255,0.1)', borderWidth: 1 }
+              },
+              scales: {
+                x: { ticks: { color: 'rgba(255,255,255,0.7)', font: { size: 10 }, maxRotation: 0, autoSkip: true, maxTicksLimit: 6 }, grid: { color: 'rgba(255,255,255,0.05)', drawBorder: false } },
+                y: { beginAtZero: false, ticks: { color: 'rgba(255,255,255,0.7)', font: { size: 10 }, callback: function(value) { if(value >= 1000) return (value/1000).toFixed(1) + 'k€'; return value + '€'; } }, grid: { color: 'rgba(255,255,255,0.1)', borderDash: [5, 5] } }
               }
+            }
           });
-      }
-      
-      // Opcional: Cerrar menú si se cambia el tamaño de la ventana a escritorio
-      window.addEventListener('resize', () => {
-          if (window.innerWidth > 768) {
-              header.classList.remove('menu-open');
-          }
-      });
-  });
-
-  function updateChart() {
-    const datasets = activeProducts.map(product => ({
-      label: productData[product].label,
-      data: productData[product].data,
-      borderColor: productData[product].borderColor,
-      backgroundColor: productData[product].backgroundColor,
-      fill: true,
-      tension: 0.3,
-      pointBackgroundColor: productData[product].borderColor,
-      pointBorderColor: '#fff',
-      pointRadius: 5
-    }));
-
-    if (capitalChart) {
-      capitalChart.data.datasets = datasets;
-      capitalChart.update();
-    } else {
-      capitalChart = new Chart(ctx.getContext('2d'), {
-        type: 'line',
-        data: {
-          labels: ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio'],
-          datasets: datasets
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false, // CRÍTICO: Deja que el CSS (60vh) controle la altura
-          layout: {
-              padding: {
-                  left: 0,
-                  right: 10,
-                  top: 10,
-                  bottom: 0
-              }
-          },
-          plugins: {
-            legend: {
-              position: 'bottom', // Leyenda abajo para dar espacio a la curva
-              align: 'center',
-              labels: { 
-                  color: '#fff', 
-                  boxWidth: 12, 
-                  padding: 20,
-                  font: { size: 12 } 
-              }
-            },
-            tooltip: {
-                mode: 'index',
-                intersect: false,
-                backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                titleColor: '#fff',
-                bodyColor: '#fff',
-                borderColor: 'rgba(255,255,255,0.1)',
-                borderWidth: 1
-            }
-          },
-          scales: {
-            x: {
-              ticks: {
-                color: 'rgba(255,255,255,0.7)',
-                font: { size: 10 },
-                maxRotation: 0,
-                autoSkip: true,
-                maxTicksLimit: 6
-              },
-              grid: { color: 'rgba(255,255,255,0.05)', drawBorder: false }
-            },
-            y: {
-              beginAtZero: false, // Empieza en el mínimo para exagerar la curva
-              ticks: {
-                color: 'rgba(255,255,255,0.7)',
-                font: { size: 10 },
-                callback: function(value) { 
-                    // Formato compacto: 1.5k en vez de 1500
-                    if(value >= 1000) return (value/1000).toFixed(1) + 'k€';
-                    return value + '€'; 
-                }
-              },
-              grid: { color: 'rgba(255,255,255,0.1)', borderDash: [5, 5] }
-            }
-          },
-          elements: {
-              point: { 
-                  radius: 0,       /* Oculta los puntos (más limpio) */
-                  hitRadius: 20,   /* Pero hace fácil tocarlos */
-                  hoverRadius: 6   /* Aparecen al pasar el ratón/dedo */
-              },
-              line: { 
-                  borderWidth: 3,
-                  tension: 0.3     /* Curvas suaves */
-              } 
-          }
         }
+      }
+
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+          const product = this.getAttribute('data-product');
+          if (this.classList.contains('active')) {
+            this.classList.remove('active');
+            activeProducts = activeProducts.filter(p => p !== product);
+          } else {
+            this.classList.add('active');
+            activeProducts.push(product);
+          }
+          if (activeProducts.length > 0) updateChart();
+        });
       });
-    }
+
+      updateChart();
   }
-
-  document.querySelectorAll('.tab-btn').forEach(btn => {
-    btn.addEventListener('click', function() {
-      const product = this.getAttribute('data-product');
-      
-      if (this.classList.contains('active')) {
-        this.classList.remove('active');
-        activeProducts = activeProducts.filter(p => p !== product);
-      } else {
-        this.classList.add('active');
-        activeProducts.push(product);
-      }
-      
-      if (activeProducts.length > 0) {
-        updateChart();
-      }
-    });
-  });
-
-  if (ctx) {
-    updateChart();
-  }
-
-  document.addEventListener('DOMContentLoaded', () => {
-      const dropdown = document.getElementById('contactDropdown');
-      
-      if (dropdown) {
-          const dropdownContent = dropdown.querySelector('.dropdown-content');
-          let closeTimer = null;
-
-          // Función para abrir: Borra cualquier temporizador de cierre pendiente
-          const openMenu = () => {
-              if (closeTimer) {
-                  clearTimeout(closeTimer);
-                  closeTimer = null;
-              }
-              dropdownContent.classList.add('show');
-          };
-
-          // Función para cerrar: Inicia la cuenta atrás de 3 segundos
-          const startCloseTimer = () => {
-              if (!closeTimer) {
-                  closeTimer = setTimeout(() => {
-                      dropdownContent.classList.remove('show');
-                      closeTimer = null;
-                  }, 250); // 3000ms = 3 segundos
-              }
-          };
-
-          // Eventos solo en el CONTENEDOR PADRE
-          // Al entrar en el padre (botón O menú), se abre/mantiene.
-          // Al salir del padre (al vacío), empieza la cuenta atrás.
-          dropdown.addEventListener('mouseenter', openMenu);
-          dropdown.addEventListener('mouseleave', startCloseTimer);
-
-          // Cerrar inmediatamente al hacer clic en un enlace
-          dropdownContent.querySelectorAll('a').forEach(link => {
-              link.addEventListener('click', () => {
-                  dropdownContent.classList.remove('show');
-              });
-          });
-      }
-  });
 </script>
 {% endblock %}
