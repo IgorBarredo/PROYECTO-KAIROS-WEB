@@ -1,3 +1,14 @@
+/* RESET GLOBAL: Para que el padding no engorde las cajas */
+* {
+  box-sizing: border-box;
+}
+
+/* Evitar scroll horizontal fantasma */
+body, html {
+  overflow-x: hidden;
+  width: 100%;
+}
+
 body {
   margin: 0;
   font-family: 'Space Grotesk', sans-serif;
@@ -382,34 +393,41 @@ canvas#capitalChart {
 
   /* C. GRÁFICA A PANTALLA COMPLETA */
   .grafica {
-      padding: 10px 0px !important; /* Sin márgenes laterales */
       width: 100% !important;
+      margin: 20px 0 !important; /* Arriba/Abajo 20px, Izq/Der 0px */
+      padding: 10px 0 !important;
   }
 
   .grafica h2 {
-      padding: 0 20px; font-size: 20px;
+      padding: 0 15px; /* Un poco de aire para el texto */
+      font-size: 20px;
   }
 
-  /* D. CONTENEDOR DE GRÁFICA (Sobrescribimos lo de PC) */
+  /* CONTENEDOR APP-STYLE */
   .chart-wrapper {
     width: 100% !important;
     margin: 0 !important;
-    border-radius: 0 !important; /* Bordes rectos */
+    border-radius: 0 !important;
     box-shadow: none !important;
+    background: transparent !important;
+    
+    /* Bordes sutiles para separar */
     border-top: 1px solid rgba(255,255,255,0.1);
     border-bottom: 1px solid rgba(255,255,255,0.1);
     
-    /* Altura dinámica para móvil */
-    height: 60vh !important;  
-    min-height: 400px;        
-    max-height: 600px;
-    
-    padding: 20px 5px !important;
+    height: 55vh !important; /* Altura generosa */
+    min-height: 350px;
+    padding: 10px 0 !important;
   }
 
   /* E. Productos en columna */
   .productos-container {
     grid-template-columns: 1fr;
     padding: 0 15px;
+  }
+
+  /* PERMITIR SCROLL SOBRE LA GRÁFICA */
+  canvas#capitalChart {
+    touch-action: pan-y; /* <--- ESTO ES LA CLAVE DE USABILIDAD */
   }
 }
